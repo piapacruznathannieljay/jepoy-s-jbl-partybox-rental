@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#111111"
+  >
+
+  <title>JEPOY'S JBL PARTYBOX — Owner</title>
+
+  <link
+    rel="stylesheet"
+    href="owner.css"
+  >
+
+</head>
+
+
+<body>
+
+  <!-- =====================================
+       APP HEADER
+  ====================================== -->
+
+  <header class="app-header">
+
+    <div class="header-title">
+
+      <div class="business-title">
+        JEPOY'S JBL PARTYBOX
+      </div>
+
+      <div class="owner-label">
+        OWNER
+      </div>
+
+    </div>
+
+
+    <button
+      id="todayButton"
+      class="header-button"
+    >
+      Today
+    </button>
+
+  </header>
+
+
+
+  <!-- =====================================
+       CALENDAR NAVIGATION
+  ====================================== -->
+
+  <section class="calendar-navigation">
+
+    <button
+      id="previousMonth"
+      class="nav-button"
+      aria-label="Previous month"
+    >
+      ‹
+    </button>
+
+
+    <h1 id="monthTitle">
+      August 2026
+    </h1>
+
+
+    <button
+      id="nextMonth"
+      class="nav-button"
+      aria-label="Next month"
+    >
+      ›
+    </button>
+
+  </section>
+
+
+
+  <!-- =====================================
+       CALENDAR VIEW OPTIONS
+  ====================================== -->
+
+  <div class="view-tabs">
+
+    <button
+      class="view-tab active"
+      data-view="month"
+    >
+      Month
+    </button>
+
+    <button
+      class="view-tab"
+      data-view="week"
+    >
+      Week
+    </button>
+
+    <button
+      class="view-tab"
+      data-view="day"
+    >
+      Day
+    </button>
+
+    <button
+      class="view-tab"
+      data-view="bookings"
+    >
+      Bookings
+    </button>
+
+  </div>
+
+
+
+  <!-- =====================================
+       CALENDAR
+  ====================================== -->
+
+  <main class="calendar-container">
+
+    <div class="weekdays">
+
+      <div>Sun</div>
+      <div>Mon</div>
+      <div>Tue</div>
+      <div>Wed</div>
+      <div>Thu</div>
+      <div>Fri</div>
+      <div>Sat</div>
+
+    </div>
+
+
+    <div
+      id="calendar"
+      class="calendar"
+    ></div>
+
+  </main>
+
+
+
+  <!-- =====================================
+       SELECTED DAY / BOOKINGS
+  ====================================== -->
+
+  <section
+    id="dayBookings"
+    class="day-bookings"
+  >
+
+    <div class="day-bookings-header">
+
+      <div>
+
+        <p class="small-label">
+          SELECTED DATE
+        </p>
+
+        <h2 id="selectedDate">
+          Select a date
+        </h2>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="bookingList"
+      class="booking-list"
+    >
+
+      <div class="empty-state">
+
+        <div class="empty-icon">
+          📅
+        </div>
+
+        <p>
+          Select a date to view bookings.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =====================================
+       ADD BOOKING BUTTON
+  ====================================== -->
+
+  <button
+    id="addBookingButton"
+    class="floating-button"
+    aria-label="Add booking"
+  >
+    +
+  </button>
+
+
+
+  <!-- =====================================
+       BOOKING DETAILS MODAL
+  ====================================== -->
+
+  <div
+    id="bookingModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-content">
+
+      <button
+        id="closeModal"
+        class="close-button"
+      >
+        ×
+      </button>
+
+
+      <p class="small-label">
+        BOOKING DETAILS
+      </p>
+
+
+      <h2 id="modalCustomerName">
+        Customer
+      </h2>
+
+
+      <div class="booking-details">
+
+        <div class="detail-row">
+          <span>📞 Contact</span>
+          <strong id="modalPhone">—</strong>
+        </div>
+
+
+        <div class="detail-row">
+          <span>📦 Package</span>
+          <strong id="modalPackage">—</strong>
+        </div>
+
+
+        <div class="detail-row">
+          <span>📅 Date</span>
+          <strong id="modalDate">—</strong>
+        </div>
+
+
+        <div class="detail-row">
+          <span>📍 Address</span>
+          <strong id="modalAddress">—</strong>
+        </div>
+
+
+        <div class="detail-row">
+          <span>🚗 Distance</span>
+          <strong id="modalDistance">—</strong>
+        </div>
+
+
+        <div class="detail-row">
+          <span>🚚 Delivery Fee</span>
+          <strong id="modalFee">—</strong>
+        </div>
+
+      </div>
+
+
+
+      <!-- MAP -->
+      <a
+        id="mapButton"
+        class="action-button map-button"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        🗺️ OPEN CUSTOMER LOCATION
+      </a>
+
+
+
+      <!-- MESSENGER -->
+      <a
+        id="replyButton"
+        class="action-button messenger-button"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        💬 REPLY TO CUSTOMER
+      </a>
+
+
+
+      <!-- STATUS -->
+      <div class="status-section">
+
+        <label for="bookingStatus">
+          Booking Status
+        </label>
+
+        <select id="bookingStatus">
+
+          <option value="pending">
+            🟡 Pending
+          </option>
+
+          <option value="confirmed">
+            🟢 Confirmed
+          </option>
+
+          <option value="delivery">
+            🔵 Out for Delivery
+          </option>
+
+          <option value="completed">
+            ✅ Completed
+          </option>
+
+          <option value="cancelled">
+            🔴 Cancelled
+          </option>
+
+        </select>
+
+      </div>
+
+
+
+      <!-- PRIVATE NOTES -->
+      <div class="notes-section">
+
+        <label for="privateNotes">
+          📝 Private Notes
+        </label>
+
+        <textarea
+          id="privateNotes"
+          rows="5"
+          placeholder="Write your private notes here..."
+        ></textarea>
+
+        <button
+          id="saveNotes"
+          class="save-button"
+        >
+          SAVE NOTES
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================
+       ADD BOOKING MODAL
+  ====================================== -->
+
+  <div
+    id="addBookingModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-content">
+
+      <button
+        id="closeAddBooking"
+        class="close-button"
+      >
+        ×
+      </button>
+
+
+      <p class="small-label">
+        NEW BOOKING
+      </p>
+
+      <h2>
+        Add Booking
+      </h2>
+
+
+      <form id="addBookingForm">
+
+        <label for="newName">
+          Customer Name
+        </label>
+
+        <input
+          id="newName"
+          type="text"
+          required
+        >
+
+
+        <label for="newPhone">
+          Contact Number
+        </label>
+
+        <input
+          id="newPhone"
+          type="tel"
+        >
+
+
+        <label for="newPackage">
+          Package
+        </label>
+
+        <select id="newPackage">
+
+          <option>
+            Package 1 - PartyBox Starter
+          </option>
+
+          <option>
+            Package 2 - PartyBox + TV
+          </option>
+
+          <option>
+            Full Package - Complete Videoke Setup
+          </option>
+
+        </select>
+
+
+        <label for="newDate">
+          Date
+        </label>
+
+        <input
+          id="newDate"
+          type="date"
+          required
+        >
+
+
+        <label for="newAddress">
+          Address
+        </label>
+
+        <textarea
+          id="newAddress"
+          rows="3"
+        ></textarea>
+
+
+        <label for="newNotes">
+          Private Notes
+        </label>
+
+        <textarea
+          id="newNotes"
+          rows="4"
+        ></textarea>
+
+
+        <button
+          type="submit"
+          class="save-button"
+        >
+          ADD BOOKING
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================
+       BOTTOM NAVIGATION
+  ====================================== -->
+
+  <nav class="bottom-navigation">
+
+    <button
+      class="bottom-nav-item active"
+      data-view="month"
+    >
+      <span>📅</span>
+      Calendar
+    </button>
+
+
+    <button
+      class="bottom-nav-item"
+      id="todayNav"
+    >
+      <span>📌</span>
+      Today
+    </button>
+
+
+    <button
+      class="bottom-nav-item"
+      data-view="bookings"
+    >
+      <span>📝</span>
+      Bookings
+    </button>
+
+  </nav>
+
+
+
+  <!-- =====================================
+       JAVASCRIPT
+  ====================================== -->
+
+  <script src="owner-config.js"></script>
+
+  <script src="owner.js"></script>
+
+
+</body>
+
+</html>

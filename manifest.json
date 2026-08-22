@@ -1,0 +1,11 @@
+{
+  "name": "JEPOY'S JBL PARTYBOX",
+  "short_name": "JEPOY'S JBL",
+  "description": "JEPOY'S JBL PARTYBOX Rental and Booking Website",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050507",
+  "theme_color": "#ff6a00",
+  "orientation": "portrait",
+  "icons": []
+}

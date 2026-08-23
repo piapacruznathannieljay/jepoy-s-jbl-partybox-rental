@@ -1,0 +1,10 @@
+{
+  "name": "JEPOY'S JBL Owner Calendar",
+  "short_name": "JEPOY Owner",
+  "start_url": "./owner.html",
+  "display": "standalone",
+  "background_color": "#050507",
+  "theme_color": "#ff7200",
+  "description": "Private booking calendar for JEPOY'S JBL PARTYBOX",
+  "orientation": "portrait"
+}

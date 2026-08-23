@@ -1,0 +1,17 @@
+{
+  "name": "JEPOY'S JBL PARTYBOX",
+  "short_name": "JEPOY'S JBL",
+  "description": "JEPOY'S JBL PARTYBOX Rental and Private Booking App",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050507",
+  "theme_color": "#050507",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "JEPOYS-JBL-PARTYBOX-custom-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

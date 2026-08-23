@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#ff7200"
+  >
+
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
+
+  <link
+    rel="stylesheet"
+    href="owner.css"
+  >
+
+  <title>JEPOY'S Owner Calendar</title>
+</head>
+
+<body>
+
+  <!-- LOGIN SCREEN -->
+
+  <div id="loginScreen" class="screen">
+
+    <div class="panel login">
+
+      <p class="orange">
+        JEPOY'S JBL PARTYBOX
+      </p>
+
+      <h1>
+        Owner Calendar
+      </h1>
+
+      <p>
+        Private booking dashboard
+      </p>
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Owner email"
+      >
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+      >
+
+      <button
+        id="loginBtn"
+        class="btn"
+        type="button"
+      >
+        Sign In
+      </button>
+
+      <p id="loginMsg" class="msg"></p>
+
+    </div>
+
+  </div>
+
+
+  <!-- OWNER APP -->
+
+  <div id="app" class="hidden">
+
+    <header>
+
+      <div>
+        <strong>
+          JEPOY'S JBL PARTYBOX
+        </strong>
+
+        <span>
+          • Owner Calendar
+        </span>
+      </div>
+
+      <button
+        id="logoutBtn"
+        class="smallBtn"
+        type="button"
+      >
+        Log out
+      </button>
+
+    </header>
+
+
+    <main>
+
+      <!-- CALENDAR CONTROLS -->
+
+      <div class="toolbar">
+
+        <button
+          id="prevBtn"
+          class="smallBtn"
+          type="button"
+        >
+          ‹
+        </button>
+
+        <h1 id="monthTitle"></h1>
+
+        <button
+          id="nextBtn"
+          class="smallBtn"
+          type="button"
+        >
+          ›
+        </button>
+
+        <button
+          id="todayBtn"
+          class="smallBtn"
+          type="button"
+        >
+          Today
+        </button>
+
+        <button
+          id="refreshBtn"
+          class="smallBtn"
+          type="button"
+        >
+          Refresh
+        </button>
+
+      </div>
+
+
+      <div
+        id="status"
+        class="status"
+      ></div>
+
+
+      <!-- CALENDAR -->
+
+      <div class="calendar">
+
+        <div class="weekdays">
+
+          <div>Sun</div>
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
+
+        </div>
+
+        <div
+          id="calendarGrid"
+          class="grid"
+        ></div>
+
+      </div>
+
+
+      <!-- BOOKING LIST -->
+
+      <section class="listSection">
+
+        <h2>
+          Bookings
+        </h2>
+
+        <div id="bookingList"></div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- BOOKING DETAILS -->
+
+  <div
+    id="detailsModal"
+    class="modal hidden"
+  >
+
+    <div class="modalCard">
+
+      <button
+        id="closeModal"
+        class="close"
+        type="button"
+      >
+        ×
+      </button>
+
+      <p class="orange">
+        BOOKING DETAILS
+      </p>
+
+      <h2 id="detailName"></h2>
+
+      <div id="detailBody"></div>
+
+
+      <div class="actions">
+
+        <a
+          id="callBtn"
+          class="btn"
+          href="#"
+        >
+          Call Customer
+        </a>
+
+        <a
+          id="mapBtn"
+          class="btn dark"
+          href="#"
+          target="_blank"
+        >
+          Open Map
+        </a>
+
+        <button
+          id="confirmBtn"
+          class="btn"
+          type="button"
+        >
+          Confirm
+        </button>
+
+        <button
+          id="cancelBtn"
+          class="btn danger"
+          type="button"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- SUPABASE -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+  <!-- SUPABASE CONFIG -->
+
+  <script src="../config.js"></script>
+
+  <!-- OWNER APP JAVASCRIPT -->
+
+  <script src="owner.js"></script>
+
+</body>
+</html>

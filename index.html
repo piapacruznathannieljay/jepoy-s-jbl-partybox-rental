@@ -558,26 +558,21 @@
 
 </footer>
 
-
 <!-- SUPABASE -->
 
-<script
-  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- CONFIG -->
 
 <script src="config.js"></script>
 
-
 <!-- MAIN JAVASCRIPT -->
 
 <script src="script.js"></script>
 
+<!-- SERVICE WORKER -->
 
-
-  <script>
+<script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js")
@@ -586,5 +581,6 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
 </body>
 </html>

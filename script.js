@@ -1,146 +1,97 @@
-// ========================================
+// ============================================
 // JEPOY'S JBL PARTYBOX
-// GPS + ROAD DISTANCE + DELIVERY
-// BOOKING + SUPABASE
-// ========================================
+// BOOKING + DELIVERY CALCULATOR
+// SUPABASE VERSION
+// ============================================
 
-// ========================================
+
+// ============================================
 // BUSINESS LOCATION
-// X6QF+PQW Bugallon, Pangasinan
-// ========================================
+// ============================================
 
 const BUSINESS_LAT = 15.989299;
 const BUSINESS_LNG = 120.2244473;
 
 
-// ========================================
+// ============================================
 // SUPABASE
-// ========================================
+// ============================================
 
-let supabaseClient = null;
-
-function initializeSupabase() {
-
-  if (
-    typeof window.supabase === "undefined"
-  ) {
-    console.error("Supabase library not loaded.");
-    return;
-  }
-
-  if (
-    typeof SUPABASE_URL === "undefined" ||
-    typeof SUPABASE_ANON_KEY === "undefined"
-  ) {
-    console.error(
-      "SUPABASE_URL or SUPABASE_ANON_KEY is missing from config.js"
-    );
-    return;
-  }
-
-  supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
-    );
-}
-
-initializeSupabase();
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
 
-// ========================================
-// STRAIGHT-LINE DISTANCE
-// ========================================
+// ============================================
+// ELEMENTS
+// ============================================
 
-function calculateDistance(
-  lat1,
-  lon1,
-  lat2,
-  lon2
-) {
+const locationBtn = document.getElementById("locationBtn");
+const calcBtn = document.getElementById("calc");
+const bookingForm = document.getElementById("bookingForm");
 
-  const R = 6371;
+const result = document.getElementById("result");
 
-  const dLat =
-    (lat2 - lat1) *
-    Math.PI / 180;
+const distanceDisplay = document.getElementById("distance");
+const feeDisplay = document.getElementById("fee");
 
-  const dLon =
-    (lon2 - lon1) *
-    Math.PI / 180;
+
+// ============================================
+// SAVED LOCATION
+// ============================================
+
+let customerLatitude = null;
+let customerLongitude = null;
+let customerDistance = null;
+let customerDeliveryFee = null;
+
+
+// ============================================
+// CALCULATE DISTANCE
+// ============================================
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+
+  const earthRadius = 6371;
+
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
 
   const a =
-    Math.sin(dLat / 2) ** 2 +
+    Math.sin(dLat / 2) *
+    Math.sin(dLat / 2) +
     Math.cos(lat1 * Math.PI / 180) *
     Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) ** 2;
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
 
-  return (
-    R *
-    2 *
-    Math.atan2(
+  const c =
+    2 * Math.atan2(
       Math.sqrt(a),
       Math.sqrt(1 - a)
-    )
-  );
+    );
+
+  return earthRadius * c;
 }
 
 
-// ========================================
-// ROAD DISTANCE
-// ========================================
-
-async function calculateRoadDistance(
-  customerLat,
-  customerLng
-) {
-
-  const url =
-    "https://router.project-osrm.org/route/v1/driving/" +
-    BUSINESS_LNG +
-    "," +
-    BUSINESS_LAT +
-    ";" +
-    customerLng +
-    "," +
-    customerLat +
-    "?overview=false";
-
-  const response =
-    await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(
-      "Unable to calculate road distance."
-    );
-  }
-
-  const data =
-    await response.json();
-
-  if (
-    data.code !== "Ok" ||
-    !data.routes ||
-    !data.routes.length
-  ) {
-
-    throw new Error(
-      "No driving route found."
-    );
-  }
-
-  return data.routes[0].distance / 1000;
-}
-
-
-// ========================================
-// DELIVERY FEE
-// ========================================
+// ============================================
+// CALCULATE DELIVERY FEE
+// ============================================
 //
-// 0–5 km = FREE
-// 5.01–8 km = ₱100
-// Every additional 3 km = +₱50
+// 0 - 5 km       = FREE
+// 5.1 - 8 km     = ₱100
+// Every extra 3km = +₱50
 //
+// Examples:
+// 5 km  = FREE
+// 6 km  = ₱100
+// 8 km  = ₱100
+// 9 km  = ₱150
+// 11 km = ₱150
+// 12 km = ₱200
+// ============================================
 
 function calculateDeliveryFee(km) {
 
@@ -152,738 +103,412 @@ function calculateDeliveryFee(km) {
     return 100;
   }
 
-  return (
-    100 +
-    Math.ceil(
-      (km - 8) / 3
-    ) * 50
-  );
+  return 100 + (Math.ceil((km - 8) / 3) * 50);
 }
 
 
-// ========================================
-// CUSTOMER GPS
-// ========================================
+// ============================================
+// FORMAT PESO
+// ============================================
 
-let customerGPS = null;
+function formatPeso(amount) {
 
-let currentDistance = null;
+  if (amount === 0) {
+    return "FREE";
+  }
 
-let currentDeliveryFee = null;
+  return "₱" + amount.toLocaleString("en-PH");
+}
 
-let currentMapsLink = null;
 
+// ============================================
+// GET CURRENT LOCATION
+// ============================================
 
-// ========================================
-// GET CUSTOMER LOCATION
-// ========================================
-
-async function getCustomerLocation() {
-
-  const result =
-    document.getElementById("result");
-
-  const distanceElement =
-    document.getElementById("distance");
-
-  const feeElement =
-    document.getElementById("fee");
-
+locationBtn.addEventListener("click", () => {
 
   if (!navigator.geolocation) {
 
     result.textContent =
-      "❌ Your browser does not support GPS.";
+      "Location is not supported by your browser.";
 
     return;
   }
 
 
   result.textContent =
-    "📍 Getting your current location...";
+    "📍 Getting your location...";
 
 
   navigator.geolocation.getCurrentPosition(
 
-    async function(position) {
+    (position) => {
 
-      const lat =
-        position.coords.latitude;
-
-      const lng =
-        position.coords.longitude;
+      customerLatitude = position.coords.latitude;
+      customerLongitude = position.coords.longitude;
 
 
-      // Save GPS
-
-      customerGPS = {
-        lat: lat,
-        lng: lng
-      };
-
-
-      // Google Maps link
-
-      currentMapsLink =
-        "https://www.google.com/maps?q=" +
-        lat +
-        "," +
-        lng;
-
-
-      result.innerHTML =
-        "📍 Location found.<br><br>" +
-        "🚗 Calculating driving distance...";
-
-
-      let distance;
-
-
-      // Try road distance
-
-      try {
-
-        distance =
-          await calculateRoadDistance(
-            lat,
-            lng
-          );
-
-      }
-
-      catch (error) {
-
-        console.error(
-          "Road distance error:",
-          error
-        );
-
-
-        // Fallback
-
-        distance =
-          calculateDistance(
-            BUSINESS_LAT,
-            BUSINESS_LNG,
-            lat,
-            lng
-          );
-
-
-        result.innerHTML =
-          "⚠️ Road distance unavailable.<br>" +
-          "Using straight-line distance instead.<br><br>" +
-          "Calculating delivery fee...";
-      }
-
-
-      distance =
-        Number(
-          distance.toFixed(2)
-        );
-
-
-      // Calculate fee
-
-      const fee =
-        calculateDeliveryFee(
-          distance
-        );
-
-
-      currentDistance =
-        distance;
-
-      currentDeliveryFee =
-        fee;
-
-
-      // Update summary
-
-      if (distanceElement) {
-
-        distanceElement.textContent =
-          distance.toFixed(2) +
-          " km";
-      }
-
-
-      if (feeElement) {
-
-        feeElement.textContent =
-          fee === 0
-            ? "FREE"
-            : "₱" +
-              fee.toLocaleString();
-      }
-
-
-      // Show result
-
-      result.innerHTML =
-
-        "📍 Distance: <strong>" +
-        distance.toFixed(2) +
-        " km</strong><br><br>" +
-
-        "🚚 Delivery Fee: <strong>" +
-        (
-          fee === 0
-            ? "FREE"
-            : "₱" +
-              fee.toLocaleString()
-        ) +
-        "</strong><br><br>" +
-
-        "🗺️ <a href=\"" +
-        currentMapsLink +
-        "\" target=\"_blank\">" +
-        "Open Customer Location in Google Maps" +
-        "</a>";
-
-    },
-
-
-    // ====================================
-    // GPS ERROR
-    // ====================================
-
-    function(error) {
-
-      console.error(
-        "GPS error:",
-        error
+      customerDistance = calculateDistance(
+        BUSINESS_LAT,
+        BUSINESS_LNG,
+        customerLatitude,
+        customerLongitude
       );
 
 
-      if (error.code === 1) {
+      customerDeliveryFee =
+        calculateDeliveryFee(customerDistance);
 
-        result.textContent =
-          "❌ Location permission denied. " +
-          "Please allow location access for this website.";
 
-      }
+      const mapsLink =
+        `https://www.google.com/maps?q=${customerLatitude},${customerLongitude}`;
 
-      else if (error.code === 2) {
 
-        result.textContent =
-          "❌ Location unavailable. " +
-          "Turn on Location/GPS and try again.";
+      distanceDisplay.textContent =
+        customerDistance.toFixed(2) + " km";
 
-      }
 
-      else if (error.code === 3) {
+      feeDisplay.textContent =
+        formatPeso(customerDeliveryFee);
 
-        result.textContent =
-          "❌ Location request timed out. " +
-          "Please try again.";
 
-      }
+      result.innerHTML = `
+        📍 Location detected.<br>
+        Distance: <b>${customerDistance.toFixed(2)} km</b><br>
+        Delivery fee: <b>${formatPeso(customerDeliveryFee)}</b><br><br>
 
-      else {
-
-        result.textContent =
-          "❌ Unable to get your location. " +
-          "Please try again.";
-      }
+        <a
+          href="${mapsLink}"
+          target="_blank"
+          rel="noopener"
+        >
+          Open my location in Google Maps
+        </a>
+      `;
 
     },
 
 
-    // ====================================
-    // GPS SETTINGS
-    // ====================================
+    (error) => {
+
+      console.error(error);
+
+      result.textContent =
+        "❌ Unable to get your location. Please allow location access and try again.";
+
+    },
+
 
     {
       enableHighAccuracy: true,
-      timeout: 20000,
+      timeout: 15000,
       maximumAge: 0
     }
 
   );
-}
+
+});
 
 
-// ========================================
-// LOCATION BUTTON
-// ========================================
+// ============================================
+// CALCULATE DELIVERY BUTTON
+// ============================================
 
-const locationButton =
-  document.getElementById(
-    "locationBtn"
+calcBtn.addEventListener("click", () => {
+
+  if (
+    customerLatitude === null ||
+    customerLongitude === null
+  ) {
+
+    result.textContent =
+      "📍 Please tap 'Use My Current Location' first.";
+
+    return;
+  }
+
+
+  customerDistance = calculateDistance(
+    BUSINESS_LAT,
+    BUSINESS_LNG,
+    customerLatitude,
+    customerLongitude
   );
 
-if (locationButton) {
 
-  locationButton.addEventListener(
-    "click",
-    function() {
-
-      getCustomerLocation();
-
-    }
-  );
-
-}
+  customerDeliveryFee =
+    calculateDeliveryFee(customerDistance);
 
 
-// ========================================
-// CALCULATE BUTTON
-// ========================================
-
-const calculateButton =
-  document.getElementById(
-    "calc"
-  );
-
-if (calculateButton) {
-
-  calculateButton.addEventListener(
-    "click",
-    function() {
-
-      getCustomerLocation();
-
-    }
-  );
-
-}
+  distanceDisplay.textContent =
+    customerDistance.toFixed(2) + " km";
 
 
-// ========================================
+  feeDisplay.textContent =
+    formatPeso(customerDeliveryFee);
+
+
+  result.textContent =
+    `Distance: ${customerDistance.toFixed(2)} km • Delivery: ${formatPeso(customerDeliveryFee)}`;
+
+});
+
+
+// ============================================
 // BOOKING FORM
-// ========================================
+// ============================================
 
-const bookingForm =
-  document.getElementById(
-    "bookingForm"
-  );
+bookingForm.addEventListener("submit", async (event) => {
 
+  event.preventDefault();
 
-if (bookingForm) {
 
-  bookingForm.addEventListener(
-    "submit",
-    async function(event) {
+  // ------------------------------------------
+  // GET FORM VALUES
+  // ------------------------------------------
 
-      event.preventDefault();
+  const name =
+    document.getElementById("name").value.trim();
 
+  const phone =
+    document.getElementById("phone").value.trim();
 
-      // ==================================
-      // CHECK GPS
-      // ==================================
+  const packageName =
+    document.getElementById("package").value;
 
-      if (!customerGPS) {
+  const rentalDate =
+    document.getElementById("date").value;
 
-        alert(
-          "Please tap 'Use My Current Location' first."
-        );
+  const address =
+    document.getElementById("address").value.trim();
 
-        return;
-      }
 
+  // ------------------------------------------
+  // CHECK LOCATION
+  // ------------------------------------------
 
-      // ==================================
-      // CHECK DELIVERY CALCULATION
-      // ==================================
+  if (
+    customerLatitude === null ||
+    customerLongitude === null
+  ) {
 
-      if (
-        currentDistance === null ||
-        currentDeliveryFee === null
-      ) {
+    alert(
+      "Please use your current location first so we can calculate the delivery distance and fee."
+    );
 
-        alert(
-          "Please calculate your delivery first."
-        );
+    return;
+  }
 
-        return;
-      }
 
+  // ------------------------------------------
+  // CHECK DELIVERY
+  // ------------------------------------------
 
-      // ==================================
-      // CHECK SUPABASE
-      // ==================================
+  if (customerDistance === null) {
 
-      if (!supabaseClient) {
+    customerDistance = calculateDistance(
+      BUSINESS_LAT,
+      BUSINESS_LNG,
+      customerLatitude,
+      customerLongitude
+    );
 
-        alert(
-          "Supabase is not connected. " +
-          "Please check config.js."
-        );
+  }
 
-        console.error(
-          "Supabase client is not initialized."
-        );
 
-        return;
-      }
+  if (customerDeliveryFee === null) {
 
+    customerDeliveryFee =
+      calculateDeliveryFee(customerDistance);
 
-      // ==================================
-      // GET FORM VALUES
-      // ==================================
+  }
 
-      const name =
-        document
-          .getElementById("name")
-          .value
-          .trim();
 
+  // ------------------------------------------
+  // GOOGLE MAPS LINK
+  // ------------------------------------------
 
-      const phone =
-        document
-          .getElementById("phone")
-          .value
-          .trim();
+  const mapsLink =
+    `https://www.google.com/maps?q=${customerLatitude},${customerLongitude}`;
 
 
-      const packageName =
-        document
-          .getElementById("package")
-          .value;
+  // ------------------------------------------
+  // BOOKING DATA
+  // ------------------------------------------
 
+  const bookingData = {
 
-      const date =
-        document
-          .getElementById("date")
-          .value;
+    // NOTE:
+    // Your Supabase column is spelled
+    // "costumer_name", so we use that exact name.
 
+    costumer_name: name,
 
-      const address =
-        document
-          .getElementById("address")
-          .value
-          .trim();
-
-
-      // ==================================
-      // VALIDATION
-      // ==================================
+    contact_number: phone,
 
-      if (
-        !name ||
-        !phone ||
-        !packageName ||
-        !date ||
-        !address
-      ) {
+    package_name: packageName,
 
-        alert(
-          "Please complete all booking fields."
-        );
+    rental_date: rentalDate,
 
-        return;
-      }
+    delivery_address: address,
 
+    latitude: customerLatitude,
 
-      // ==================================
-      // GOOGLE MAPS
-      // ==================================
+    longitude: customerLongitude,
 
-      const mapsLink =
-        currentMapsLink ||
-        (
-          "https://www.google.com/maps?q=" +
-          customerGPS.lat +
-          "," +
-          customerGPS.lng
-        );
+    distance_km: Number(
+      customerDistance.toFixed(2)
+    ),
 
+    delivery_fee: customerDeliveryFee,
 
-      // ==================================
-      // DISABLE BUTTON
-      // ==================================
+    maps_link: mapsLink,
 
-      const submitButton =
-        bookingForm.querySelector(
-          'button[type="submit"]'
-        );
+    status: "Pending"
 
+  };
 
-      if (submitButton) {
 
-        submitButton.disabled =
-          true;
+  // ------------------------------------------
+  // DISABLE BUTTON
+  // ------------------------------------------
 
-        submitButton.textContent =
-          "Sending Booking...";
-      }
+  const submitButton =
+    bookingForm.querySelector(
+      'button[type="submit"]'
+    );
 
 
-      try {
+  submitButton.disabled = true;
 
-        // ==================================
-        // SEND TO SUPABASE
-        // ==================================
+  submitButton.textContent =
+    "Sending Booking...";
 
-        const { data, error } =
-          await supabaseClient
-            .from("bookings")
-            .insert([
-              {
-                customer_name: name,
-                contact_number: phone,
-                package_name: packageName,
-                rental_date: date,
-                delivery_address: address,
-                latitude: customerGPS.lat,
-                longitude: customerGPS.lng,
-                distance_km: currentDistance,
-                delivery_fee: currentDeliveryFee,
-                maps_link: mapsLink,
-                status: "pending"
-              }
-            ])
-            .select();
 
+  try {
 
-        // ==================================
-        // SUPABASE ERROR
-        // ==================================
+    // ----------------------------------------
+    // SEND TO SUPABASE
+    // ----------------------------------------
 
-        if (error) {
+    const { data, error } =
+      await supabaseClient
+        .from("bookings")
+        .insert([bookingData])
+        .select();
 
-          console.error(
-            "Supabase booking error:",
-            error
-          );
 
-          alert(
-            "❌ Booking could not be saved.\n\n" +
-            error.message
-          );
+    if (error) {
 
-          return;
-        }
+      console.error(
+        "Supabase booking error:",
+        error
+      );
 
+      alert(
+        "❌ Booking could not be submitted.\n\n" +
+        error.message
+      );
 
-        // ==================================
-        // SUCCESS
-        // ==================================
-
-        console.log(
-          "Booking saved:",
-          data
-        );
-
-
-        alert(
-          "✅ Booking request sent successfully!\n\n" +
-          "Your booking has been recorded."
-        );
-
-
-        // ==================================
-        // MESSENGER MESSAGE
-        // ==================================
-
-        const message =
-
-          "Hello JEPOY'S JBL PARTYBOX!" +
-          "\n\n" +
-
-          "I would like to book a rental." +
-          "\n\n" +
-
-          "Name: " +
-          name +
-          "\n" +
-
-          "Contact: " +
-          phone +
-          "\n" +
-
-          "Package: " +
-          packageName +
-          "\n" +
-
-          "Date: " +
-          date +
-          "\n" +
-
-          "Delivery Address: " +
-          address +
-          "\n\n" +
-
-          "📍 Delivery Distance: " +
-          currentDistance.toFixed(2) +
-          " km" +
-          "\n" +
-
-          "🚚 Delivery Fee: " +
-          (
-            currentDeliveryFee === 0
-              ? "FREE"
-              : "₱" +
-                currentDeliveryFee.toLocaleString()
-          ) +
-          "\n\n" +
-
-          "🗺️ CUSTOMER LOCATION:" +
-          "\n" +
-
-          mapsLink;
-
-
-        const messengerURL =
-          "https://m.me/1218332498024792?text=" +
-          encodeURIComponent(
-            message
-          );
-
-
-        // Open Messenger
-
-        window.open(
-          messengerURL,
-          "_blank"
-        );
-
-
-        // ==================================
-        // RESET FORM
-        // ==================================
-
-        bookingForm.reset();
-
-
-        customerGPS =
-          null;
-
-        currentDistance =
-          null;
-
-        currentDeliveryFee =
-          null;
-
-        currentMapsLink =
-          null;
-
-
-        document
-          .getElementById("distance")
-          .textContent =
-          "Not calculated";
-
-
-        document
-          .getElementById("fee")
-          .textContent =
-          "Not calculated";
-
-
-        document
-          .getElementById("result")
-          .textContent =
-          "Booking sent successfully.";
-
-      }
-
-      catch (error) {
-
-        console.error(
-          "Unexpected booking error:",
-          error
-        );
-
-        alert(
-          "❌ Something went wrong while sending the booking.\n\n" +
-          error.message
-        );
-
-      }
-
-      finally {
-
-        if (submitButton) {
-
-          submitButton.disabled =
-            false;
-
-          submitButton.textContent =
-            "Send Booking Request";
-        }
-
-      }
-
+      return;
     }
-  );
-
-}
 
 
-// ========================================
-// SET MINIMUM RENTAL DATE
-// ========================================
+    // ----------------------------------------
+    // SUCCESS
+    // ----------------------------------------
 
-const dateInput =
-  document.getElementById(
-    "date"
-  );
-
-
-if (dateInput) {
-
-  const today =
-    new Date();
+    console.log(
+      "Booking successfully saved:",
+      data
+    );
 
 
-  const year =
-    today.getFullYear();
+    // ----------------------------------------
+    // MESSENGER MESSAGE
+    // ----------------------------------------
+
+    const message =
+      `Hello JEPOY'S JBL PARTYBOX!
+
+I would like to make a booking.
+
+Name: ${name}
+
+Contact Number: ${phone}
+
+Package: ${packageName}
+
+Rental Date: ${rentalDate}
+
+Delivery Address: ${address}
+
+Distance: ${customerDistance.toFixed(2)} km
+
+Delivery Fee: ${formatPeso(customerDeliveryFee)}
+
+Google Maps Location:
+${mapsLink}
+
+Booking Status: Pending`;
 
 
-  const month =
-    String(
-      today.getMonth() + 1
-    ).padStart(2, "0");
+    const messengerURL =
+      `https://m.me/1218332498024792?text=${encodeURIComponent(message)}`;
 
 
-  const day =
-    String(
-      today.getDate()
-    ).padStart(2, "0");
+    alert(
+      "✅ Booking request submitted successfully!\n\n" +
+      "You will now be redirected to Facebook Messenger."
+    );
 
 
-  dateInput.min =
-    year +
-    "-" +
-    month +
-    "-" +
-    day;
-}
+    // ----------------------------------------
+    // OPEN MESSENGER
+    // ----------------------------------------
+
+    window.open(
+      messengerURL,
+      "_blank"
+    );
 
 
-// ========================================
-// PWA SERVICE WORKER
-// ========================================
+    // ----------------------------------------
+    // RESET FORM
+    // ----------------------------------------
 
-if (
-  "serviceWorker" in navigator
-) {
+    bookingForm.reset();
 
-  window.addEventListener(
-    "load",
-    function() {
+    customerLatitude = null;
+    customerLongitude = null;
+    customerDistance = null;
+    customerDeliveryFee = null;
 
-      navigator.serviceWorker
-        .register("sw.js")
-        .then(function() {
+    distanceDisplay.textContent =
+      "Not calculated";
 
-          console.log(
-            "JEPOY'S app service worker registered."
-          );
+    feeDisplay.textContent =
+      "Not calculated";
 
-        })
-        .catch(function(error) {
+    result.textContent =
+      "Tap the button to calculate your distance.";
 
-          console.error(
-            "Service worker registration failed:",
-            error
-          );
 
-        });
+  } catch (error) {
 
-    }
-  );
+    console.error(error);
 
-}
+    alert(
+      "❌ Something went wrong while submitting your booking."
+    );
+
+  } finally {
+
+    submitButton.disabled = false;
+
+    submitButton.textContent =
+      "Send Booking Request";
+
+  }
+
+});

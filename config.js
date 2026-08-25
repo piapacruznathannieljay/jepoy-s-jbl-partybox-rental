@@ -3,6 +3,6 @@
 // SUPABASE CONFIGURATION
 // ========================================
 
-const SUPABASE_URL = "https://mxercqhnytshxmnoyoja.supabase.co";
+const SUPABASE_URL = "https://mxercghnytshxmnoyoja.supabase.co";
 
-const SUPABASE_ANON_KEY = "sb_publishable_3VccmXrJiyEbLWxdWZSj5g_1GXSr9ni";
+const SUPABASE_ANON_KEY = "sb publishable 3VccmxrJiyEbLWxdWzSj5g 1GxSr9";

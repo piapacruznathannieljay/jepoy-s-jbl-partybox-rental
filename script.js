@@ -1,530 +1,654 @@
-// ============================================
-// JEPOY'S JBL PARTYBOX
-// BOOKING + DELIVERY CALCULATOR
-// SUPABASE VERSION
-// ============================================
+    <!DOCTYPE html>
+<html lang="en">
 
+<head>
 
-// ============================================
-// BUSINESS LOCATION
-// ============================================
+  <meta charset="UTF-8">
 
-const BUSINESS_LAT = 15.989299;
-const BUSINESS_LNG = 120.2244473;
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
+  <meta
+    name="theme-color"
+    content="#050507"
+  >
 
-// ============================================
-// SUPABASE
-// ============================================
+  <meta
+    name="description"
+    content="JEPOY'S JBL PARTYBOX rental booking"
+  >
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
+  <title>JEPOY'S JBL PARTYBOX</title>
 
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 
-// ============================================
-// ELEMENTS
-// ============================================
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
 
-const locationBtn = document.getElementById("locationBtn");
-const calcBtn = document.getElementById("calc");
-const bookingForm = document.getElementById("bookingForm");
+</head>
 
-const result = document.getElementById("result");
 
-const distanceDisplay = document.getElementById("distance");
-const feeDisplay = document.getElementById("fee");
+<body>
 
 
-// ============================================
-// SAVED LOCATION
-// ============================================
+<!-- =========================
+     HEADER
+========================= -->
 
-let customerLatitude = null;
-let customerLongitude = null;
-let customerDistance = null;
-let customerDeliveryFee = null;
+<header>
 
+  <a
+    href="#home"
+    class="logo"
+  >
+    JEPOY'S <span>JBL PARTYBOX</span>
+  </a>
 
-// ============================================
-// CALCULATE DISTANCE
-// ============================================
+  <a
+    href="#reserve"
+    class="topbtn"
+  >
+    Reserve
+  </a>
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
+</header>
 
-  const earthRadius = 6371;
 
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+<!-- =========================
+     HERO
+========================= -->
 
-  const a =
-    Math.sin(dLat / 2) *
-    Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) *
-    Math.sin(dLon / 2);
+<section
+  class="hero"
+  id="home"
+>
 
-  const c =
-    2 * Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1 - a)
-    );
+  <p class="orange">
+    SOUND • MOVIE MARATHON • SING • PARTY
+  </p>
 
-  return earthRadius * c;
-}
+  <h1>
+    JBL PARTYBOX<br>
+    <b>ULTIMATE</b>
+  </h1>
 
+  <p>
+    Premium party, karaoke and movie-night rental
+    delivered to you.
+  </p>
 
-// ============================================
-// CALCULATE DELIVERY FEE
-// ============================================
-//
-// 0 - 5 km       = FREE
-// 5.1 - 8 km     = ₱100
-// Every extra 3km = +₱50
-//
-// Examples:
-// 5 km  = FREE
-// 6 km  = ₱100
-// 8 km  = ₱100
-// 9 km  = ₱150
-// 11 km = ₱150
-// 12 km = ₱200
-// ============================================
+  <div>
 
-function calculateDeliveryFee(km) {
+    <a
+      href="#packages"
+      class="btn"
+    >
+      View Packages
+    </a>
 
-  if (km <= 5) {
-    return 0;
-  }
+    <a
+      href="#reserve"
+      class="btn dark"
+    >
+      Book Now
+    </a>
 
-  if (km <= 8) {
-    return 100;
-  }
+  </div>
 
-  return 100 + (Math.ceil((km - 8) / 3) * 50);
-}
+</section>
 
 
-// ============================================
-// FORMAT PESO
-// ============================================
+<!-- =========================
+     PACKAGES
+========================= -->
 
-function formatPeso(amount) {
+<section id="packages">
 
-  if (amount === 0) {
-    return "FREE";
-  }
+  <p class="orange">
+    CHOOSE YOUR SETUP
+  </p>
 
-  return "₱" + Number(amount).toLocaleString("en-PH");
-}
+  <h2>
+    Rental Packages
+  </h2>
 
 
-// ============================================
-// GET CURRENT LOCATION
-// ============================================
+  <div class="cards">
 
-locationBtn.addEventListener("click", () => {
 
-  if (!navigator.geolocation) {
+    <!-- PACKAGE 1 -->
 
-    result.textContent =
-      "Location is not supported by your browser.";
+    <article>
 
-    return;
-  }
+      <small>
+        PACKAGE 1
+      </small>
 
+      <h3>
+        PartyBox Starter
+      </h3>
 
-  result.textContent =
-    "📍 Getting your location...";
+      <ul>
 
+        <li>
+          JBL PartyBox Ultimate
+        </li>
 
-  navigator.geolocation.getCurrentPosition(
+        <li>
+          2 wireless microphones
+        </li>
 
-    (position) => {
+        <li>
+          Music & small parties
+        </li>
 
-      customerLatitude = position.coords.latitude;
-      customerLongitude = position.coords.longitude;
+      </ul>
 
+      <div>
+        <span>12 hours</span>
+        <b>₱799</b>
+      </div>
 
-      customerDistance = calculateDistance(
-        BUSINESS_LAT,
-        BUSINESS_LNG,
-        customerLatitude,
-        customerLongitude
-      );
+      <div>
+        <span>24 hours</span>
+        <b>₱999</b>
+      </div>
 
+      <em>
+        ₱100/hour extension
+      </em>
 
-      customerDeliveryFee =
-        calculateDeliveryFee(customerDistance);
+      <a
+        class="btn"
+        href="#reserve"
+      >
+        Reserve
+      </a>
 
+    </article>
 
-      const mapsLink =
-        `https://www.google.com/maps?q=${customerLatitude},${customerLongitude}`;
 
+    <!-- PACKAGE 2 -->
 
-      distanceDisplay.textContent =
-        customerDistance.toFixed(2) + " km";
+    <article class="featured">
 
+      <small>
+        PACKAGE 2 • POPULAR
+      </small>
 
-      feeDisplay.textContent =
-        formatPeso(customerDeliveryFee);
+      <h3>
+        Party + Movie
+      </h3>
 
+      <ul>
 
-      result.innerHTML = `
-        📍 Location detected.<br>
-        Distance: <b>${customerDistance.toFixed(2)} km</b><br>
-        Delivery fee: <b>${formatPeso(customerDeliveryFee)}</b><br><br>
+        <li>
+          JBL PartyBox Ultimate
+        </li>
 
-        <a
-          href="${mapsLink}"
-          target="_blank"
-          rel="noopener"
-        >
-          Open my location in Google Maps
-        </a>
-      `;
+        <li>
+          2 wireless microphones
+        </li>
 
-    },
+        <li>
+          43″ Xiaomi Google TV
+        </li>
 
+        <li>
+          TV stand
+        </li>
 
-    (error) => {
+        <li>
+          Premium entertainment subscriptions
+        </li>
 
-      console.error("Geolocation error:", error);
+      </ul>
 
-      result.textContent =
-        "❌ Unable to get your location. Please allow location access and try again.";
+      <div>
+        <span>12 hours</span>
+        <b>₱1,099</b>
+      </div>
 
-    },
+      <div>
+        <span>24 hours</span>
+        <b>₱1,399</b>
+      </div>
 
+      <em>
+        ₱150/hour extension
+      </em>
 
-    {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0
-    }
+      <a
+        class="btn"
+        href="#reserve"
+      >
+        Reserve
+      </a>
 
-  );
+    </article>
 
-});
 
+    <!-- FULL PACKAGE -->
 
-// ============================================
-// CALCULATE DELIVERY BUTTON
-// ============================================
+    <article>
 
-calcBtn.addEventListener("click", () => {
+      <small>
+        FULL PACKAGE
+      </small>
 
-  if (
-    customerLatitude === null ||
-    customerLongitude === null
-  ) {
+      <h3>
+        Complete Party Setup
+      </h3>
 
-    result.textContent =
-      "📍 Please tap 'Use My Current Location' first.";
+      <ul>
 
-    return;
-  }
+        <li>
+          JBL PartyBox Ultimate
+        </li>
 
+        <li>
+          2 wireless microphones
+        </li>
 
-  customerDistance = calculateDistance(
-    BUSINESS_LAT,
-    BUSINESS_LNG,
-    customerLatitude,
-    customerLongitude
-  );
+        <li>
+          43″ Xiaomi Google TV + stand
+        </li>
 
+        <li>
+          Platinum karaoke system
+        </li>
 
-  customerDeliveryFee =
-    calculateDeliveryFee(customerDistance);
+        <li>
+          23,000+ songs
+        </li>
 
+        <li>
+          Wired microphone & disco lights
+        </li>
 
-  distanceDisplay.textContent =
-    customerDistance.toFixed(2) + " km";
+      </ul>
 
+      <div>
+        <span>12 hours</span>
+        <b>₱1,199</b>
+      </div>
 
-  feeDisplay.textContent =
-    formatPeso(customerDeliveryFee);
+      <div>
+        <span>24 hours</span>
+        <b>₱1,599</b>
+      </div>
 
+      <em>
+        ₱150/hour extension
+      </em>
 
-  result.textContent =
-    `Distance: ${customerDistance.toFixed(2)} km • Delivery: ${formatPeso(customerDeliveryFee)}`;
+      <a
+        class="btn"
+        href="#reserve"
+      >
+        Reserve
+      </a>
 
-});
+    </article>
 
+  </div>
 
-// ============================================
-// BOOKING FORM
-// ============================================
+</section>
 
-bookingForm.addEventListener("submit", async (event) => {
 
-  event.preventDefault();
+<!-- =========================
+     FEATURES
+========================= -->
 
+<section>
 
-  // ==========================================
-  // GET FORM VALUES
-  // ==========================================
+  <p class="orange">
+    PARTY-READY FEATURES
+  </p>
 
-  const name =
-    document.getElementById("name").value.trim();
+  <h2>
+    Everything you need
+  </h2>
 
-  const phone =
-    document.getElementById("phone").value.trim();
 
-  const packageName =
-    document.getElementById("package").value;
+  <div class="features">
 
-  const rentalDate =
-    document.getElementById("date").value;
+    <div>
 
-  const address =
-    document.getElementById("address").value.trim();
+      🔊
 
+      <h3>
+        Powerful Sound
+      </h3>
 
-  // ==========================================
-  // CHECK LOCATION
-  // ==========================================
+      <p>
+        JBL PartyBox Ultimate.
+      </p>
 
-  if (
-    customerLatitude === null ||
-    customerLongitude === null
-  ) {
+    </div>
 
-    alert(
-      "Please use your current location first so we can calculate the delivery distance and fee."
-    );
 
-    return;
-  }
+    <div>
 
+      🎤
 
-  // ==========================================
-  // CALCULATE DISTANCE IF NEEDED
-  // ==========================================
+      <h3>
+        Karaoke
+      </h3>
 
-  customerDistance = calculateDistance(
-    BUSINESS_LAT,
-    BUSINESS_LNG,
-    customerLatitude,
-    customerLongitude
-  );
+      <p>
+        Wireless microphones and songs.
+      </p>
 
+    </div>
 
-  // ==========================================
-  // CALCULATE DELIVERY FEE
-  // ==========================================
 
-  customerDeliveryFee =
-    calculateDeliveryFee(customerDistance);
+    <div>
 
+      📺
 
-  // ==========================================
-  // GOOGLE MAPS LINK
-  // ==========================================
+      <h3>
+        Movie Night
+      </h3>
 
-  const mapsLink =
-    `https://www.google.com/maps?q=${customerLatitude},${customerLongitude}`;
+      <p>
+        Smart TV entertainment.
+      </p>
 
+    </div>
 
-  // ==========================================
-  // BOOKING DATA
-  // ==========================================
 
-  const bookingData = {
+    <div>
 
-    costumer_name: name,
+      ✨
 
-    contact_number: phone,
+      <h3>
+        Party Lights
+      </h3>
 
-    package_name: packageName,
+      <p>
+        Disco lighting for your event.
+      </p>
 
-    rental_date: rentalDate,
+    </div>
 
-    delivery_address: address,
+  </div>
 
-    latitude: customerLatitude,
+</section>
 
-    longitude: customerLongitude,
 
-    distance_km: Number(
-      customerDistance.toFixed(2)
-    ),
+<!-- =========================
+     DELIVERY
+========================= -->
 
-    delivery_fee: customerDeliveryFee,
+<section>
 
-    maps_link: mapsLink,
+  <p class="orange">
+    DELIVERY
+  </p>
 
-    status: "Pending"
+  <h2>
+    Automatic Delivery Fee
+  </h2>
 
-  };
 
+  <div class="delivery">
 
-  console.log(
-    "Booking data:",
-    bookingData
-  );
+    <p>
 
+      <b>
+        📍 Free delivery within 5 km
+      </b>
 
-  // ==========================================
-  // DISABLE SUBMIT BUTTON
-  // ==========================================
+    </p>
 
-  const submitButton =
-    bookingForm.querySelector(
-      'button[type="submit"]'
-    );
+    <p>
 
+      Beyond 5 km: ₱100 base delivery +
+      ₱50 for every additional 3 km.
 
-  submitButton.disabled = true;
+    </p>
 
-  submitButton.textContent =
-    "Sending Booking...";
 
+    <button
+      id="locationBtn"
+      class="btn"
+      type="button"
+    >
 
-  try {
+      📍 Use My Current Location
 
-    // ========================================
-    // TEST SUPABASE CONNECTION
-    // ========================================
+    </button>
 
-    console.log(
-      "Sending booking to Supabase..."
-    );
 
+    <p id="result">
 
-    // ========================================
-    // INSERT BOOKING
-    // ========================================
+      Tap the button to calculate your distance.
 
-    const { data, error } =
-      await supabaseClient
-        .from("bookings")
-        .insert([bookingData])
-        .select();
+    </p>
 
+  </div>
 
-    // ========================================
-    // SUPABASE ERROR
-    // ========================================
+</section>
 
-    if (error) {
 
-      console.error(
-        "Supabase booking error:",
-        error
-      );
+<!-- =========================
+     RESERVATION
+========================= -->
 
-      alert(
-        "❌ Booking could not be saved.\n\n" +
-        error.message
-      );
+<section id="reserve">
 
-      return;
-    }
+  <p class="orange">
+    RESERVE YOUR DATE
+  </p>
 
+  <h2>
+    Book Your Party Setup
+  </h2>
 
-    // ========================================
-    // SUCCESS
-    // ========================================
 
-    console.log(
-      "Booking successfully saved:",
-      data
-    );
+  <form id="bookingForm">
 
 
-    // ========================================
-    // MESSENGER MESSAGE
-    // ========================================
+    <!-- NAME -->
 
-    const message =
-      `Hello JEPOY'S JBL PARTYBOX!
+    <label>
 
-I would like to make a booking.
+      Name
 
-Name: ${name}
+      <input
+        id="name"
+        type="text"
+        required
+      >
 
-Contact Number: ${phone}
+    </label>
 
-Package: ${packageName}
 
-Rental Date: ${rentalDate}
+    <!-- CONTACT -->
 
-Delivery Address: ${address}
+    <label>
 
-Distance: ${customerDistance.toFixed(2)} km
+      Contact number
 
-Delivery Fee: ${formatPeso(customerDeliveryFee)}
+      <input
+        id="phone"
+        type="tel"
+        required
+      >
 
-Google Maps Location:
-${mapsLink}
+    </label>
 
-Booking Status: Pending`;
 
+    <!-- PACKAGE -->
 
-    const messengerURL =
-      `https://m.me/1218332498024792?text=${encodeURIComponent(message)}`;
+    <label>
 
+      Package
 
-    alert(
-      "✅ Booking request submitted successfully!\n\n" +
-      "You will now be redirected to Facebook Messenger."
-    );
+      <select
+        id="package"
+        required
+      >
 
+        <option value="">
+          Select Package
+        </option>
 
-    // ========================================
-    // OPEN MESSENGER
-    // ========================================
+        <option>
+          Package 1 - PartyBox Starter
+        </option>
 
-    window.open(
-      messengerURL,
-      "_blank"
-    );
+        <option>
+          Package 2 - Party + Movie
+        </option>
 
+        <option>
+          Full Package - Complete Party Setup
+        </option>
 
-    // ========================================
-    // RESET FORM
-    // ========================================
+      </select>
 
-    bookingForm.reset();
+    </label>
 
-    customerLatitude = null;
-    customerLongitude = null;
-    customerDistance = null;
-    customerDeliveryFee = null;
 
+    <!-- RENTAL DATE -->
 
-    distanceDisplay.textContent =
-      "Not calculated";
+    <label>
 
-    feeDisplay.textContent =
-      "Not calculated";
+      Date
 
-    result.textContent =
-      "Tap the button to calculate your distance.";
+      <input
+        id="date"
+        type="date"
+        min="2026-08-26"
+        required
+      >
 
+    </label>
 
-  } catch (error) {
 
-    console.error(
-      "Unexpected booking error:",
-      error
-    );
+    <!-- DELIVERY ADDRESS -->
 
-    alert(
-      "❌ Something went wrong while submitting your booking.\n\n" +
-      error.message
-    );
+    <label>
 
-  } finally {
+      Delivery address
 
-    submitButton.disabled = false;
+      <textarea
+        id="address"
+        required
+      ></textarea>
 
-    submitButton.textContent =
-      "Send Booking Request";
+    </label>
 
-  }
 
-});
+    <!-- DELIVERY SUMMARY -->
+
+    <div class="summary">
+
+      <span>
+        Distance
+      </span>
+
+      <b id="distance">
+        Not calculated
+      </b>
+
+
+      <span>
+        Delivery fee
+      </span>
+
+      <b id="fee">
+        Not calculated
+      </b>
+
+    </div>
+
+
+    <!-- CALCULATE DELIVERY -->
+
+    <button
+      type="button"
+      id="calc"
+      class="btn dark"
+    >
+
+      Calculate Delivery
+
+    </button>
+
+
+    <!-- SUBMIT BOOKING -->
+
+    <button
+      type="submit"
+      class="btn"
+    >
+
+      Send Booking Request
+
+    </button>
+
+
+  </form>
+
+
+  <!-- MESSENGER -->
+
+  <a
+    class="messenger"
+    href="https://m.me/1218332498024792"
+    target="_blank"
+  >
+
+    💬 Message us on Facebook Messenger
+
+  </a>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+  © 2026 JEPOY'S JBL PARTYBOX
+  • Bugallon, Pangasinan
+
+</footer>
+
+
+<!-- =========================
+     SUPABASE
+========================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<!-- =========================
+     SUPABASE CONFIG
+========================= -->
+
+<script src="config.js"></script>
+
+
+<!-- =========================
+     MAIN JAVASCRIPT
+========================= -->
+
+<script src="script.js"></script>
+
+
+</body>
+
+</html>

@@ -117,7 +117,7 @@ function formatPeso(amount) {
     return "FREE";
   }
 
-  return "₱" + amount.toLocaleString("en-PH");
+  return "₱" + Number(amount).toLocaleString("en-PH");
 }
 
 
@@ -191,7 +191,7 @@ locationBtn.addEventListener("click", () => {
 
     (error) => {
 
-      console.error(error);
+      console.error("Geolocation error:", error);
 
       result.textContent =
         "❌ Unable to get your location. Please allow location access and try again.";
@@ -263,9 +263,9 @@ bookingForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
 
-  // ------------------------------------------
+  // ==========================================
   // GET FORM VALUES
-  // ------------------------------------------
+  // ==========================================
 
   const name =
     document.getElementById("name").value.trim();
@@ -283,9 +283,9 @@ bookingForm.addEventListener("submit", async (event) => {
     document.getElementById("address").value.trim();
 
 
-  // ------------------------------------------
+  // ==========================================
   // CHECK LOCATION
-  // ------------------------------------------
+  // ==========================================
 
   if (
     customerLatitude === null ||
@@ -300,47 +300,39 @@ bookingForm.addEventListener("submit", async (event) => {
   }
 
 
-  // ------------------------------------------
-  // CHECK DELIVERY
-  // ------------------------------------------
+  // ==========================================
+  // CALCULATE DISTANCE IF NEEDED
+  // ==========================================
 
-  if (customerDistance === null) {
-
-    customerDistance = calculateDistance(
-      BUSINESS_LAT,
-      BUSINESS_LNG,
-      customerLatitude,
-      customerLongitude
-    );
-
-  }
+  customerDistance = calculateDistance(
+    BUSINESS_LAT,
+    BUSINESS_LNG,
+    customerLatitude,
+    customerLongitude
+  );
 
 
-  if (customerDeliveryFee === null) {
+  // ==========================================
+  // CALCULATE DELIVERY FEE
+  // ==========================================
 
-    customerDeliveryFee =
-      calculateDeliveryFee(customerDistance);
-
-  }
+  customerDeliveryFee =
+    calculateDeliveryFee(customerDistance);
 
 
-  // ------------------------------------------
+  // ==========================================
   // GOOGLE MAPS LINK
-  // ------------------------------------------
+  // ==========================================
 
   const mapsLink =
     `https://www.google.com/maps?q=${customerLatitude},${customerLongitude}`;
 
 
-  // ------------------------------------------
+  // ==========================================
   // BOOKING DATA
-  // ------------------------------------------
+  // ==========================================
 
   const bookingData = {
-
-    // NOTE:
-    // Your Supabase column is spelled
-    // "costumer_name", so we use that exact name.
 
     costumer_name: name,
 
@@ -369,9 +361,15 @@ bookingForm.addEventListener("submit", async (event) => {
   };
 
 
-  // ------------------------------------------
-  // DISABLE BUTTON
-  // ------------------------------------------
+  console.log(
+    "Booking data:",
+    bookingData
+  );
+
+
+  // ==========================================
+  // DISABLE SUBMIT BUTTON
+  // ==========================================
 
   const submitButton =
     bookingForm.querySelector(
@@ -387,9 +385,18 @@ bookingForm.addEventListener("submit", async (event) => {
 
   try {
 
-    // ----------------------------------------
-    // SEND TO SUPABASE
-    // ----------------------------------------
+    // ========================================
+    // TEST SUPABASE CONNECTION
+    // ========================================
+
+    console.log(
+      "Sending booking to Supabase..."
+    );
+
+
+    // ========================================
+    // INSERT BOOKING
+    // ========================================
 
     const { data, error } =
       await supabaseClient
@@ -397,6 +404,10 @@ bookingForm.addEventListener("submit", async (event) => {
         .insert([bookingData])
         .select();
 
+
+    // ========================================
+    // SUPABASE ERROR
+    // ========================================
 
     if (error) {
 
@@ -406,7 +417,7 @@ bookingForm.addEventListener("submit", async (event) => {
       );
 
       alert(
-        "❌ Booking could not be submitted.\n\n" +
+        "❌ Booking could not be saved.\n\n" +
         error.message
       );
 
@@ -414,9 +425,9 @@ bookingForm.addEventListener("submit", async (event) => {
     }
 
 
-    // ----------------------------------------
+    // ========================================
     // SUCCESS
-    // ----------------------------------------
+    // ========================================
 
     console.log(
       "Booking successfully saved:",
@@ -424,9 +435,9 @@ bookingForm.addEventListener("submit", async (event) => {
     );
 
 
-    // ----------------------------------------
+    // ========================================
     // MESSENGER MESSAGE
-    // ----------------------------------------
+    // ========================================
 
     const message =
       `Hello JEPOY'S JBL PARTYBOX!
@@ -463,9 +474,9 @@ Booking Status: Pending`;
     );
 
 
-    // ----------------------------------------
+    // ========================================
     // OPEN MESSENGER
-    // ----------------------------------------
+    // ========================================
 
     window.open(
       messengerURL,
@@ -473,9 +484,9 @@ Booking Status: Pending`;
     );
 
 
-    // ----------------------------------------
+    // ========================================
     // RESET FORM
-    // ----------------------------------------
+    // ========================================
 
     bookingForm.reset();
 
@@ -483,6 +494,7 @@ Booking Status: Pending`;
     customerLongitude = null;
     customerDistance = null;
     customerDeliveryFee = null;
+
 
     distanceDisplay.textContent =
       "Not calculated";
@@ -496,10 +508,14 @@ Booking Status: Pending`;
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Unexpected booking error:",
+      error
+    );
 
     alert(
-      "❌ Something went wrong while submitting your booking."
+      "❌ Something went wrong while submitting your booking.\n\n" +
+      error.message
     );
 
   } finally {

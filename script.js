@@ -1,654 +1,982 @@
-    <!DOCTYPE html>
-<html lang="en">
+/*
+=========================================================
+JEPOY'S JBL PARTYBOX
+BOOKING SYSTEM
+=========================================================
+*/
 
-<head>
 
-  <meta charset="UTF-8">
+document.addEventListener("DOMContentLoaded", () => {
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  console.log("JEPOY'S JBL PARTYBOX booking system loaded.");
 
-  <meta
-    name="theme-color"
-    content="#050507"
-  >
+  /*
+  ========================================================
+  BUSINESS LOCATION
+  ========================================================
+  */
 
-  <meta
-    name="description"
-    content="JEPOY'S JBL PARTYBOX rental booking"
-  >
+  const BUSINESS_LAT = 15.989299;
+  const BUSINESS_LNG = 120.2244473;
 
-  <title>JEPOY'S JBL PARTYBOX</title>
 
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
+  /*
+  ========================================================
+  ELEMENTS
+  ========================================================
+  */
 
-  <link
-    rel="manifest"
-    href="manifest.json"
-  >
+  const bookingForm =
+    document.getElementById("bookingForm");
 
-</head>
+  const nameInput =
+    document.getElementById("name");
 
+  const phoneInput =
+    document.getElementById("phone");
 
-<body>
+  const packageInput =
+    document.getElementById("package");
 
+  const dateInput =
+    document.getElementById("date");
 
-<!-- =========================
-     HEADER
-========================= -->
+  const addressInput =
+    document.getElementById("address");
 
-<header>
+  const locationBtn =
+    document.getElementById("locationBtn");
 
-  <a
-    href="#home"
-    class="logo"
-  >
-    JEPOY'S <span>JBL PARTYBOX</span>
-  </a>
+  const calculateBtn =
+    document.getElementById("calc");
 
-  <a
-    href="#reserve"
-    class="topbtn"
-  >
-    Reserve
-  </a>
+  const submitBtn =
+    document.getElementById("submitBooking");
 
-</header>
+  const distanceDisplay =
+    document.getElementById("distance");
 
+  const feeDisplay =
+    document.getElementById("fee");
 
-<!-- =========================
-     HERO
-========================= -->
+  const resultDisplay =
+    document.getElementById("result");
 
-<section
-  class="hero"
-  id="home"
->
 
-  <p class="orange">
-    SOUND • MOVIE MARATHON • SING • PARTY
-  </p>
+  /*
+  ========================================================
+  TODAY'S DATE
+  ========================================================
+  */
 
-  <h1>
-    JBL PARTYBOX<br>
-    <b>ULTIMATE</b>
-  </h1>
+  function getTodayLocalDate() {
 
-  <p>
-    Premium party, karaoke and movie-night rental
-    delivered to you.
-  </p>
+    const now = new Date();
 
-  <div>
+    const year =
+      now.getFullYear();
 
-    <a
-      href="#packages"
-      class="btn"
-    >
-      View Packages
-    </a>
+    const month =
+      String(now.getMonth() + 1)
+        .padStart(2, "0");
 
-    <a
-      href="#reserve"
-      class="btn dark"
-    >
-      Book Now
-    </a>
+    const day =
+      String(now.getDate())
+        .padStart(2, "0");
 
-  </div>
+    return `${year}-${month}-${day}`;
+  }
 
-</section>
 
+  /*
+  ========================================================
+  PREVENT PAST DATES
+  ========================================================
+  */
 
-<!-- =========================
-     PACKAGES
-========================= -->
+  const today =
+    getTodayLocalDate();
 
-<section id="packages">
+  dateInput.min = today;
 
-  <p class="orange">
-    CHOOSE YOUR SETUP
-  </p>
+  /*
+  If an old date is already inside the field,
+  remove it.
+  */
 
-  <h2>
-    Rental Packages
-  </h2>
+  if (
+    dateInput.value &&
+    dateInput.value < today
+  ) {
+    dateInput.value = "";
+  }
 
 
-  <div class="cards">
+  /*
+  ========================================================
+  CHECK DATE
+  ========================================================
+  */
 
+  function isValidDate() {
 
-    <!-- PACKAGE 1 -->
+    if (!dateInput.value) {
+      alert("Please select a rental date.");
+      return false;
+    }
 
-    <article>
+    const today =
+      getTodayLocalDate();
 
-      <small>
-        PACKAGE 1
-      </small>
+    if (dateInput.value < today) {
 
-      <h3>
-        PartyBox Starter
-      </h3>
+      alert(
+        "❌ You cannot book a date that has already passed."
+      );
 
-      <ul>
+      dateInput.value = "";
 
-        <li>
-          JBL PartyBox Ultimate
-        </li>
+      return false;
+    }
 
-        <li>
-          2 wireless microphones
-        </li>
+    return true;
+  }
 
-        <li>
-          Music & small parties
-        </li>
 
-      </ul>
+  /*
+  ========================================================
+  HAVERSINE DISTANCE
+  ========================================================
+  */
 
-      <div>
-        <span>12 hours</span>
-        <b>₱799</b>
-      </div>
+  function calculateDistanceKm(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+  ) {
 
-      <div>
-        <span>24 hours</span>
-        <b>₱999</b>
-      </div>
+    const earthRadius = 6371;
 
-      <em>
-        ₱100/hour extension
-      </em>
+    const dLat =
+      (lat2 - lat1) *
+      Math.PI / 180;
 
-      <a
-        class="btn"
-        href="#reserve"
-      >
-        Reserve
-      </a>
+    const dLon =
+      (lon2 - lon1) *
+      Math.PI / 180;
 
-    </article>
+    const a =
+      Math.sin(dLat / 2) *
+      Math.sin(dLat / 2) +
 
+      Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
 
-    <!-- PACKAGE 2 -->
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
-    <article class="featured">
+    const c =
+      2 *
+      Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      );
 
-      <small>
-        PACKAGE 2 • POPULAR
-      </small>
+    return earthRadius * c;
+  }
 
-      <h3>
-        Party + Movie
-      </h3>
 
-      <ul>
+  /*
+  ========================================================
+  DELIVERY FEE
+  ========================================================
+  
+  0 - 5 km       = FREE
+  5.01 - 8 km    = ₱100
+  Above 8 km     = +₱50 every additional 3 km
 
-        <li>
-          JBL PartyBox Ultimate
-        </li>
+  ========================================================
+  */
 
-        <li>
-          2 wireless microphones
-        </li>
+  function calculateDeliveryFee(distanceKm) {
 
-        <li>
-          43″ Xiaomi Google TV
-        </li>
+    if (distanceKm <= 5) {
+      return 0;
+    }
 
-        <li>
-          TV stand
-        </li>
+    if (distanceKm <= 8) {
+      return 100;
+    }
 
-        <li>
-          Premium entertainment subscriptions
-        </li>
+    const additionalKm =
+      distanceKm - 8;
 
-      </ul>
+    const additionalBlocks =
+      Math.ceil(additionalKm / 3);
 
-      <div>
-        <span>12 hours</span>
-        <b>₱1,099</b>
-      </div>
+    return 100 +
+      (additionalBlocks * 50);
+  }
 
-      <div>
-        <span>24 hours</span>
-        <b>₱1,399</b>
-      </div>
 
-      <em>
-        ₱150/hour extension
-      </em>
+  /*
+  ========================================================
+  FORMAT PESO
+  ========================================================
+  */
 
-      <a
-        class="btn"
-        href="#reserve"
-      >
-        Reserve
-      </a>
+  function formatPeso(amount) {
 
-    </article>
+    return "₱" +
+      Number(amount).toLocaleString(
+        "en-PH"
+      );
+  }
 
 
-    <!-- FULL PACKAGE -->
+  /*
+  ========================================================
+  GPS DATA
+  ========================================================
+  */
 
-    <article>
+  let customerLatitude = null;
+  let customerLongitude = null;
 
-      <small>
-        FULL PACKAGE
-      </small>
+  let calculatedDistanceKm = null;
+  let calculatedDeliveryFee = null;
 
-      <h3>
-        Complete Party Setup
-      </h3>
+  let googleMapsLink = "";
 
-      <ul>
 
-        <li>
-          JBL PartyBox Ultimate
-        </li>
+  /*
+  ========================================================
+  UPDATE LOCATION DISPLAY
+  ========================================================
+  */
 
-        <li>
-          2 wireless microphones
-        </li>
+  function updateLocationDisplay(
+    latitude,
+    longitude
+  ) {
 
-        <li>
-          43″ Xiaomi Google TV + stand
-        </li>
+    customerLatitude = latitude;
+    customerLongitude = longitude;
 
-        <li>
-          Platinum karaoke system
-        </li>
+    calculatedDistanceKm =
+      calculateDistanceKm(
+        BUSINESS_LAT,
+        BUSINESS_LNG,
+        latitude,
+        longitude
+      );
 
-        <li>
-          23,000+ songs
-        </li>
+    calculatedDistanceKm =
+      Number(
+        calculatedDistanceKm.toFixed(2)
+      );
 
-        <li>
-          Wired microphone & disco lights
-        </li>
+    calculatedDeliveryFee =
+      calculateDeliveryFee(
+        calculatedDistanceKm
+      );
 
-      </ul>
+    googleMapsLink =
+      `https://www.google.com/maps?q=${latitude},${longitude}`;
 
-      <div>
-        <span>12 hours</span>
-        <b>₱1,199</b>
-      </div>
 
-      <div>
-        <span>24 hours</span>
-        <b>₱1,599</b>
-      </div>
+    /*
+    UPDATE SCREEN
+    */
 
-      <em>
-        ₱150/hour extension
-      </em>
+    distanceDisplay.textContent =
+      `${calculatedDistanceKm.toFixed(2)} km`;
 
-      <a
-        class="btn"
-        href="#reserve"
-      >
-        Reserve
-      </a>
 
-    </article>
+    if (
+      calculatedDeliveryFee === 0
+    ) {
 
-  </div>
+      feeDisplay.textContent =
+        "FREE";
 
-</section>
+    } else {
 
+      feeDisplay.textContent =
+        formatPeso(
+          calculatedDeliveryFee
+        );
+    }
 
-<!-- =========================
-     FEATURES
-========================= -->
 
-<section>
+    resultDisplay.innerHTML =
+      `
+      📍 Location detected.<br>
+      Distance: <b>${calculatedDistanceKm.toFixed(2)} km</b><br>
+      Delivery fee: <b>${
+        calculatedDeliveryFee === 0
+          ? "FREE"
+          : formatPeso(calculatedDeliveryFee)
+      }</b>
+      `;
+  }
 
-  <p class="orange">
-    PARTY-READY FEATURES
-  </p>
 
-  <h2>
-    Everything you need
-  </h2>
+  /*
+  ========================================================
+  GET CURRENT LOCATION
+  ========================================================
+  */
 
+  function getCurrentLocation() {
 
-  <div class="features">
+    if (!navigator.geolocation) {
 
-    <div>
+      alert(
+        "❌ Your browser does not support location services."
+      );
 
-      🔊
+      return;
+    }
 
-      <h3>
-        Powerful Sound
-      </h3>
 
-      <p>
-        JBL PartyBox Ultimate.
-      </p>
+    locationBtn.disabled = true;
 
-    </div>
+    locationBtn.textContent =
+      "📍 Getting Location...";
 
 
-    <div>
+    navigator.geolocation.getCurrentPosition(
 
-      🎤
+      (position) => {
 
-      <h3>
-        Karaoke
-      </h3>
+        const latitude =
+          position.coords.latitude;
 
-      <p>
-        Wireless microphones and songs.
-      </p>
+        const longitude =
+          position.coords.longitude;
 
-    </div>
 
+        updateLocationDisplay(
+          latitude,
+          longitude
+        );
 
-    <div>
 
-      📺
+        locationBtn.disabled = false;
 
-      <h3>
-        Movie Night
-      </h3>
+        locationBtn.textContent =
+          "📍 Location Detected";
+      },
 
-      <p>
-        Smart TV entertainment.
-      </p>
 
-    </div>
+      (error) => {
 
+        console.error(
+          "GPS ERROR:",
+          error
+        );
 
-    <div>
 
-      ✨
+        locationBtn.disabled = false;
 
-      <h3>
-        Party Lights
-      </h3>
+        locationBtn.textContent =
+          "📍 Use My Current Location";
 
-      <p>
-        Disco lighting for your event.
-      </p>
 
-    </div>
+        let message =
+          "Unable to get your location.";
 
-  </div>
 
-</section>
+        if (
+          error.code ===
+          error.PERMISSION_DENIED
+        ) {
 
+          message =
+            "❌ Location permission was denied. Please allow location access for this website in your browser settings.";
 
-<!-- =========================
-     DELIVERY
-========================= -->
+        } else if (
+          error.code ===
+          error.POSITION_UNAVAILABLE
+        ) {
 
-<section>
+          message =
+            "❌ Your location is currently unavailable. Make sure GPS/location is turned on.";
 
-  <p class="orange">
-    DELIVERY
-  </p>
+        } else if (
+          error.code ===
+          error.TIMEOUT
+        ) {
 
-  <h2>
-    Automatic Delivery Fee
-  </h2>
+          message =
+            "❌ Getting your location took too long. Please try again.";
 
+        }
 
-  <div class="delivery">
 
-    <p>
+        alert(message);
+      },
 
-      <b>
-        📍 Free delivery within 5 km
-      </b>
 
-    </p>
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      }
 
-    <p>
+    );
+  }
 
-      Beyond 5 km: ₱100 base delivery +
-      ₱50 for every additional 3 km.
 
-    </p>
+  /*
+  ========================================================
+  LOCATION BUTTON
+  ========================================================
+  */
 
+  locationBtn.addEventListener(
+    "click",
+    getCurrentLocation
+  );
 
-    <button
-      id="locationBtn"
-      class="btn"
-      type="button"
-    >
 
-      📍 Use My Current Location
+  /*
+  ========================================================
+  CALCULATE DELIVERY BUTTON
+  ========================================================
+  */
 
-    </button>
+  calculateBtn.addEventListener(
+    "click",
+    () => {
 
+      if (
+        customerLatitude === null ||
+        customerLongitude === null
+      ) {
 
-    <p id="result">
+        alert(
+          "📍 Please use the 'Use My Current Location' button first."
+        );
 
-      Tap the button to calculate your distance.
+        return;
+      }
 
-    </p>
 
-  </div>
+      updateLocationDisplay(
+        customerLatitude,
+        customerLongitude
+      );
 
-</section>
+    }
+  );
 
 
-<!-- =========================
-     RESERVATION
-========================= -->
+  /*
+  ========================================================
+  DATE CHANGE
+  ========================================================
+  */
 
-<section id="reserve">
+  dateInput.addEventListener(
+    "change",
+    () => {
 
-  <p class="orange">
-    RESERVE YOUR DATE
-  </p>
+      isValidDate();
 
-  <h2>
-    Book Your Party Setup
-  </h2>
+    }
+  );
 
 
-  <form id="bookingForm">
+  /*
+  ========================================================
+  SUBMIT BOOKING
+  ========================================================
+  */
 
+  bookingForm.addEventListener(
+    "submit",
+    async (event) => {
 
-    <!-- NAME -->
+      event.preventDefault();
 
-    <label>
 
-      Name
+      /*
+      Prevent double clicking
+      */
 
-      <input
-        id="name"
-        type="text"
-        required
-      >
+      if (
+        submitBtn.disabled
+      ) {
+        return;
+      }
 
-    </label>
 
+      /*
+      Validate date
+      */
 
-    <!-- CONTACT -->
+      if (!isValidDate()) {
+        return;
+      }
 
-    <label>
 
-      Contact number
+      /*
+      Validate location
+      */
 
-      <input
-        id="phone"
-        type="tel"
-        required
-      >
+      if (
+        customerLatitude === null ||
+        customerLongitude === null
+      ) {
 
-    </label>
+        alert(
+          "📍 Please use your current location before sending the booking."
+        );
 
+        return;
+      }
 
-    <!-- PACKAGE -->
 
-    <label>
+      /*
+      Validate delivery calculation
+      */
 
-      Package
+      if (
+        calculatedDistanceKm === null ||
+        calculatedDeliveryFee === null
+      ) {
 
-      <select
-        id="package"
-        required
-      >
+        alert(
+          "Please calculate the delivery first."
+        );
 
-        <option value="">
-          Select Package
-        </option>
+        return;
+      }
 
-        <option>
-          Package 1 - PartyBox Starter
-        </option>
 
-        <option>
-          Package 2 - Party + Movie
-        </option>
+      /*
+      Validate Supabase configuration
+      */
 
-        <option>
-          Full Package - Complete Party Setup
-        </option>
+      if (
+        typeof supabaseClient ===
+        "undefined"
+      ) {
 
-      </select>
+        alert(
+          "❌ Supabase is not configured. Please check config.js."
+        );
 
-    </label>
+        console.error(
+          "supabaseClient is undefined."
+        );
 
+        return;
+      }
 
-    <!-- RENTAL DATE -->
 
-    <label>
+      /*
+      Get form values
+      */
 
-      Date
+      const customerName =
+        nameInput.value.trim();
 
-      <input
-        id="date"
-        type="date"
-        min="2026-08-26"
-        required
-      >
+      const contactNumber =
+        phoneInput.value.trim();
 
-    </label>
+      const packageName =
+        packageInput.value.trim();
 
+      const rentalDate =
+        dateInput.value;
 
-    <!-- DELIVERY ADDRESS -->
+      const deliveryAddress =
+        addressInput.value.trim();
 
-    <label>
 
-      Delivery address
+      /*
+      Basic validation
+      */
 
-      <textarea
-        id="address"
-        required
-      ></textarea>
+      if (!customerName) {
 
-    </label>
+        alert(
+          "Please enter your name."
+        );
 
+        return;
+      }
 
-    <!-- DELIVERY SUMMARY -->
 
-    <div class="summary">
+      if (!contactNumber) {
 
-      <span>
-        Distance
-      </span>
+        alert(
+          "Please enter your contact number."
+        );
 
-      <b id="distance">
-        Not calculated
-      </b>
+        return;
+      }
 
 
-      <span>
-        Delivery fee
-      </span>
+      if (!packageName) {
 
-      <b id="fee">
-        Not calculated
-      </b>
+        alert(
+          "Please select a package."
+        );
 
-    </div>
+        return;
+      }
 
 
-    <!-- CALCULATE DELIVERY -->
+      if (!deliveryAddress) {
 
-    <button
-      type="button"
-      id="calc"
-      class="btn dark"
-    >
+        alert(
+          "Please enter your delivery address."
+        );
 
-      Calculate Delivery
+        return;
+      }
 
-    </button>
 
+      /*
+      Disable button
+      */
 
-    <!-- SUBMIT BOOKING -->
+      submitBtn.disabled = true;
 
-    <button
-      type="submit"
-      class="btn"
-    >
+      const originalButtonText =
+        "Send Booking Request";
 
-      Send Booking Request
+      submitBtn.textContent =
+        "Sending Booking...";
 
-    </button>
 
+      /*
+      Booking data
+      */
 
-  </form>
+      const bookingData = {
 
+        costumer_name:
+          customerName,
 
-  <!-- MESSENGER -->
+        contact_number:
+          contactNumber,
 
-  <a
-    class="messenger"
-    href="https://m.me/1218332498024792"
-    target="_blank"
-  >
+        package_name:
+          packageName,
 
-    💬 Message us on Facebook Messenger
+        rental_date:
+          rentalDate,
 
-  </a>
+        delivery_address:
+          deliveryAddress,
 
-</section>
+        latitude:
+          customerLatitude,
 
+        longitude:
+          customerLongitude,
 
-<!-- =========================
-     FOOTER
-========================= -->
+        distance_km:
+          calculatedDistanceKm,
 
-<footer>
+        delivery_fee:
+          calculatedDeliveryFee,
 
-  © 2026 JEPOY'S JBL PARTYBOX
-  • Bugallon, Pangasinan
+        maps_link:
+          googleMapsLink,
 
-</footer>
+        status:
+          "Pending"
+      };
 
 
-<!-- =========================
-     SUPABASE
-========================= -->
+      console.log(
+        "Booking data:",
+        bookingData
+      );
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+      /*
+      =====================================================
+      SAVE TO SUPABASE
+      =====================================================
+      */
 
-<!-- =========================
-     SUPABASE CONFIG
-========================= -->
+      try {
 
-<script src="config.js"></script>
+        const {
+          data,
+          error
+        } = await supabaseClient
+          .from("bookings")
+          .insert([
+            bookingData
+          ])
+          .select();
 
 
-<!-- =========================
-     MAIN JAVASCRIPT
-========================= -->
+        /*
+        Supabase returned an error
+        */
 
-<script src="script.js"></script>
+        if (error) {
 
+          console.error(
+            "SUPABASE ERROR:",
+            error
+          );
 
-</body>
 
-</html>
+          throw new Error(
+            error.message ||
+            "Supabase could not save the booking."
+          );
+        }
+
+
+        console.log(
+          "BOOKING SAVED:",
+          data
+        );
+
+
+        /*
+        ===================================================
+        SUCCESS
+        ===================================================
+        */
+
+        submitBtn.textContent =
+          "Booking Sent ✓";
+
+
+        const messengerMessage =
+          `Hello JEPOY'S JBL PARTYBOX!%0A%0A` +
+
+          `I would like to make a booking.%0A%0A` +
+
+          `Name: ${encodeURIComponent(customerName)}%0A` +
+
+          `Contact: ${encodeURIComponent(contactNumber)}%0A` +
+
+          `Package: ${encodeURIComponent(packageName)}%0A` +
+
+          `Date: ${encodeURIComponent(rentalDate)}%0A` +
+
+          `Address: ${encodeURIComponent(deliveryAddress)}%0A` +
+
+          `Distance: ${encodeURIComponent(calculatedDistanceKm + " km")}%0A` +
+
+          `Delivery Fee: ${encodeURIComponent(
+            calculatedDeliveryFee === 0
+              ? "FREE"
+              : formatPeso(calculatedDeliveryFee)
+          )}%0A%0A` +
+
+          `Google Maps Location:%0A` +
+
+          `${encodeURIComponent(googleMapsLink)}`;
+
+
+        /*
+        Show confirmation
+        */
+
+        alert(
+          "✅ Booking successfully sent!\n\n" +
+          "Your booking status is Pending.\n\n" +
+          "JEPOY'S JBL PARTYBOX will contact you shortly to confirm your booking."
+        );
+
+
+        /*
+        Optional Messenger redirect
+        */
+
+        const messengerURL =
+          `https://m.me/1218332498024792?text=${messengerMessage}`;
+
+
+        const openMessenger =
+          confirm(
+            "Would you also like to send the booking details through Facebook Messenger?"
+          );
+
+
+        if (openMessenger) {
+
+          window.open(
+            messengerURL,
+            "_blank"
+          );
+        }
+
+
+        /*
+        Reset form
+        */
+
+        bookingForm.reset();
+
+
+        /*
+        Restore today's minimum date
+        */
+
+        dateInput.min =
+          getTodayLocalDate();
+
+
+        /*
+        Reset location
+        */
+
+        customerLatitude = null;
+
+        customerLongitude = null;
+
+        calculatedDistanceKm = null;
+
+        calculatedDeliveryFee = null;
+
+        googleMapsLink = "";
+
+
+        distanceDisplay.textContent =
+          "Not calculated";
+
+        feeDisplay.textContent =
+          "Not calculated";
+
+        resultDisplay.textContent =
+          "Tap the button to calculate your distance.";
+
+
+      } catch (error) {
+
+        /*
+        ===================================================
+        ERROR
+        ===================================================
+        */
+
+        console.error(
+          "BOOKING ERROR:",
+          error
+        );
+
+
+        let errorMessage =
+          error.message ||
+          "Unknown error";
+
+
+        /*
+        Special message for network errors
+        */
+
+        if (
+          errorMessage
+            .toLowerCase()
+            .includes("failed to fetch")
+        ) {
+
+          errorMessage =
+            "The website could not connect to Supabase.\n\n" +
+            "Please check your Supabase URL, API key, Internet connection, and Supabase settings.";
+        }
+
+
+        alert(
+          "❌ Booking could not be saved.\n\n" +
+          errorMessage
+        );
+
+
+        /*
+        Restore button
+        */
+
+        submitBtn.disabled = false;
+
+        submitBtn.textContent =
+          originalButtonText;
+      }
+
+    }
+  );
+
+
+  /*
+  ========================================================
+  AUTOMATIC DATE CHECK
+  ========================================================
+  
+  This runs whenever the page becomes visible again.
+  It prevents yesterday's date from remaining selectable.
+  
+  ========================================================
+  */
+
+  function refreshMinimumDate() {
+
+    const currentDate =
+      getTodayLocalDate();
+
+    dateInput.min =
+      currentDate;
+
+
+    if (
+      dateInput.value &&
+      dateInput.value < currentDate
+    ) {
+
+      dateInput.value = "";
+
+      distanceDisplay.textContent =
+        "Not calculated";
+
+      feeDisplay.textContent =
+        "Not calculated";
+    }
+  }
+
+
+  document.addEventListener(
+    "visibilitychange",
+    () => {
+
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+
+        refreshMinimumDate();
+
+      }
+
+    }
+  );
+
+
+  /*
+  ========================================================
+  INITIAL DATE SETUP
+  ========================================================
+  */
+
+  refreshMinimumDate();
+
+
+  console.log(
+    "Booking system ready."
+  );
+
+});

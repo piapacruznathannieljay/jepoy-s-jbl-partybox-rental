@@ -1,153 +1,195 @@
-/*
-=========================================================
-JEPOY'S JBL PARTYBOX
-BOOKING SYSTEM
-=========================================================
-*/
-
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("JEPOY'S JBL PARTYBOX booking system loaded.");
-
-  /*
-  ========================================================
-  BUSINESS LOCATION
-  ========================================================
-  */
+  // =====================================================
+  // BUSINESS LOCATION
+  // =====================================================
 
   const BUSINESS_LAT = 15.989299;
   const BUSINESS_LNG = 120.2244473;
 
 
-  /*
-  ========================================================
-  ELEMENTS
-  ========================================================
-  */
+  // =====================================================
+  // ELEMENTS
+  // =====================================================
 
-  const bookingForm =
-    document.getElementById("bookingForm");
+  const bookingForm = document.getElementById("bookingForm");
+  const nameInput = document.getElementById("name");
+  const phoneInput = document.getElementById("phone");
+  const packageInput = document.getElementById("package");
+  const dateInput = document.getElementById("date");
+  const addressInput = document.getElementById("address");
 
-  const nameInput =
-    document.getElementById("name");
+  const locationBtn = document.getElementById("locationBtn");
+  const calculateBtn = document.getElementById("calc");
+  const submitBtn = document.getElementById("submitBooking");
 
-  const phoneInput =
-    document.getElementById("phone");
-
-  const packageInput =
-    document.getElementById("package");
-
-  const dateInput =
-    document.getElementById("date");
-
-  const addressInput =
-    document.getElementById("address");
-
-  const locationBtn =
-    document.getElementById("locationBtn");
-
-  const calculateBtn =
-    document.getElementById("calc");
-
-  const submitBtn =
-    document.getElementById("submitBooking");
-
-  const distanceDisplay =
-    document.getElementById("distance");
-
-  const feeDisplay =
-    document.getElementById("fee");
-
-  const resultDisplay =
-    document.getElementById("result");
+  const distanceDisplay = document.getElementById("distance");
+  const feeDisplay = document.getElementById("fee");
+  const resultDisplay = document.getElementById("result");
 
 
-  /*
-  ========================================================
-  TODAY'S DATE
-  ========================================================
-  */
+  // =====================================================
+  // GET TODAY - PHILIPPINES LOCAL DATE
+  // =====================================================
 
   function getTodayLocalDate() {
 
     const now = new Date();
 
-    const year =
-      now.getFullYear();
+    const year = now.getFullYear();
 
-    const month =
-      String(now.getMonth() + 1)
-        .padStart(2, "0");
+    const month = String(
+      now.getMonth() + 1
+    ).padStart(2, "0");
 
-    const day =
-      String(now.getDate())
-        .padStart(2, "0");
+    const day = String(
+      now.getDate()
+    ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   }
 
 
-  /*
-  ========================================================
-  PREVENT PAST DATES
-  ========================================================
-  */
+  // =====================================================
+  // SET DATE LIMIT
+  // =====================================================
 
-  const today =
-    getTodayLocalDate();
+  function setDateLimit() {
 
-  dateInput.min = today;
+    const today = getTodayLocalDate();
 
-  /*
-  If an old date is already inside the field,
-  remove it.
-  */
+    dateInput.setAttribute(
+      "min",
+      today
+    );
 
-  if (
-    dateInput.value &&
-    dateInput.value < today
-  ) {
-    dateInput.value = "";
-  }
+    /*
+    If an old date is currently selected,
+    immediately remove it.
+    */
 
-
-  /*
-  ========================================================
-  CHECK DATE
-  ========================================================
-  */
-
-  function isValidDate() {
-
-    if (!dateInput.value) {
-      alert("Please select a rental date.");
-      return false;
-    }
-
-    const today =
-      getTodayLocalDate();
-
-    if (dateInput.value < today) {
-
-      alert(
-        "❌ You cannot book a date that has already passed."
-      );
+    if (
+      dateInput.value &&
+      dateInput.value < today
+    ) {
 
       dateInput.value = "";
 
+    }
+
+    console.log(
+      "Minimum booking date:",
+      today
+    );
+  }
+
+
+  // Set immediately
+  setDateLimit();
+
+
+  // =====================================================
+  // DATE VALIDATION
+  // =====================================================
+
+  function validateBookingDate() {
+
+    const today = getTodayLocalDate();
+
+    const selectedDate = dateInput.value;
+
+
+    // No date
+    if (!selectedDate) {
+
+      alert(
+        "Please select a rental date."
+      );
+
       return false;
     }
+
+
+    // PAST DATE
+    if (selectedDate < today) {
+
+      alert(
+        "❌ This date has already passed.\n\n" +
+        "Please select September 4, 2026 or a later date."
+      );
+
+      // Remove invalid date
+      dateInput.value = "";
+
+      // Re-apply minimum
+      dateInput.setAttribute(
+        "min",
+        today
+      );
+
+      return false;
+    }
+
 
     return true;
   }
 
 
-  /*
-  ========================================================
-  HAVERSINE DISTANCE
-  ========================================================
-  */
+  // =====================================================
+  // EXTRA PROTECTION WHEN DATE CHANGES
+  // =====================================================
+
+  dateInput.addEventListener(
+    "change",
+    () => {
+
+      const today = getTodayLocalDate();
+
+      if (
+        dateInput.value &&
+        dateInput.value < today
+      ) {
+
+        alert(
+          "❌ You cannot select a past date."
+        );
+
+        dateInput.value = "";
+
+        dateInput.setAttribute(
+          "min",
+          today
+        );
+
+      }
+
+    }
+  );
+
+
+  // Also check whenever the date input receives input
+  dateInput.addEventListener(
+    "input",
+    () => {
+
+      const today = getTodayLocalDate();
+
+      if (
+        dateInput.value &&
+        dateInput.value < today
+      ) {
+
+        dateInput.value = "";
+
+      }
+
+    }
+  );
+
+
+  // =====================================================
+  // HAVERSINE DISTANCE
+  // =====================================================
 
   function calculateDistanceKm(
     lat1,
@@ -167,14 +209,11 @@ document.addEventListener("DOMContentLoaded", () => {
       Math.PI / 180;
 
     const a =
-      Math.sin(dLat / 2) *
-      Math.sin(dLat / 2) +
+      Math.sin(dLat / 2) ** 2 +
 
       Math.cos(lat1 * Math.PI / 180) *
       Math.cos(lat2 * Math.PI / 180) *
-
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+      Math.sin(dLon / 2) ** 2;
 
     const c =
       2 *
@@ -187,44 +226,40 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  /*
-  ========================================================
-  DELIVERY FEE
-  ========================================================
-  
-  0 - 5 km       = FREE
-  5.01 - 8 km    = ₱100
-  Above 8 km     = +₱50 every additional 3 km
-
-  ========================================================
-  */
+  // =====================================================
+  // DELIVERY FEE
+  // =====================================================
 
   function calculateDeliveryFee(distanceKm) {
 
     if (distanceKm <= 5) {
+
       return 0;
+
     }
 
     if (distanceKm <= 8) {
+
       return 100;
+
     }
 
     const additionalKm =
       distanceKm - 8;
 
     const additionalBlocks =
-      Math.ceil(additionalKm / 3);
+      Math.ceil(
+        additionalKm / 3
+      );
 
     return 100 +
-      (additionalBlocks * 50);
+      additionalBlocks * 50;
   }
 
 
-  /*
-  ========================================================
-  FORMAT PESO
-  ========================================================
-  */
+  // =====================================================
+  // PESO FORMAT
+  // =====================================================
 
   function formatPeso(amount) {
 
@@ -235,11 +270,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  /*
-  ========================================================
-  GPS DATA
-  ========================================================
-  */
+  // =====================================================
+  // LOCATION VARIABLES
+  // =====================================================
 
   let customerLatitude = null;
   let customerLongitude = null;
@@ -250,11 +283,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let googleMapsLink = "";
 
 
-  /*
-  ========================================================
-  UPDATE LOCATION DISPLAY
-  ========================================================
-  */
+  // =====================================================
+  // UPDATE LOCATION
+  // =====================================================
 
   function updateLocationDisplay(
     latitude,
@@ -286,35 +317,25 @@ document.addEventListener("DOMContentLoaded", () => {
       `https://www.google.com/maps?q=${latitude},${longitude}`;
 
 
-    /*
-    UPDATE SCREEN
-    */
-
     distanceDisplay.textContent =
       `${calculatedDistanceKm.toFixed(2)} km`;
 
 
-    if (
+    feeDisplay.textContent =
       calculatedDeliveryFee === 0
-    ) {
-
-      feeDisplay.textContent =
-        "FREE";
-
-    } else {
-
-      feeDisplay.textContent =
-        formatPeso(
-          calculatedDeliveryFee
-        );
-    }
+        ? "FREE"
+        : formatPeso(
+            calculatedDeliveryFee
+          );
 
 
     resultDisplay.innerHTML =
       `
       📍 Location detected.<br>
-      Distance: <b>${calculatedDistanceKm.toFixed(2)} km</b><br>
-      Delivery fee: <b>${
+      Distance:
+      <b>${calculatedDistanceKm.toFixed(2)} km</b><br>
+      Delivery fee:
+      <b>${
         calculatedDeliveryFee === 0
           ? "FREE"
           : formatPeso(calculatedDeliveryFee)
@@ -323,11 +344,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  /*
-  ========================================================
-  GET CURRENT LOCATION
-  ========================================================
-  */
+  // =====================================================
+  // GPS
+  // =====================================================
 
   function getCurrentLocation() {
 
@@ -349,20 +368,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     navigator.geolocation.getCurrentPosition(
 
-      (position) => {
-
-        const latitude =
-          position.coords.latitude;
-
-        const longitude =
-          position.coords.longitude;
-
+      position => {
 
         updateLocationDisplay(
-          latitude,
-          longitude
+          position.coords.latitude,
+          position.coords.longitude
         );
-
 
         locationBtn.disabled = false;
 
@@ -371,13 +382,12 @@ document.addEventListener("DOMContentLoaded", () => {
       },
 
 
-      (error) => {
+      error => {
 
         console.error(
           "GPS ERROR:",
           error
         );
-
 
         locationBtn.disabled = false;
 
@@ -395,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
           message =
-            "❌ Location permission was denied. Please allow location access for this website in your browser settings.";
+            "❌ Location permission was denied. Please allow location access for this website.";
 
         } else if (
           error.code ===
@@ -403,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
           message =
-            "❌ Your location is currently unavailable. Make sure GPS/location is turned on.";
+            "❌ Your location is currently unavailable.";
 
         } else if (
           error.code ===
@@ -411,8 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
           message =
-            "❌ Getting your location took too long. Please try again.";
-
+            "❌ Location request timed out. Please try again.";
         }
 
 
@@ -430,11 +439,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  /*
-  ========================================================
-  LOCATION BUTTON
-  ========================================================
-  */
+  // =====================================================
+  // LOCATION BUTTON
+  // =====================================================
 
   locationBtn.addEventListener(
     "click",
@@ -442,11 +449,9 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
 
-  /*
-  ========================================================
-  CALCULATE DELIVERY BUTTON
-  ========================================================
-  */
+  // =====================================================
+  // CALCULATE DELIVERY
+  // =====================================================
 
   calculateBtn.addEventListener(
     "click",
@@ -458,7 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ) {
 
         alert(
-          "📍 Please use the 'Use My Current Location' button first."
+          "📍 Please use your current location first."
         );
 
         return;
@@ -474,58 +479,33 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
 
-  /*
-  ========================================================
-  DATE CHANGE
-  ========================================================
-  */
-
-  dateInput.addEventListener(
-    "change",
-    () => {
-
-      isValidDate();
-
-    }
-  );
-
-
-  /*
-  ========================================================
-  SUBMIT BOOKING
-  ========================================================
-  */
+  // =====================================================
+  // FORM SUBMIT
+  // =====================================================
 
   bookingForm.addEventListener(
     "submit",
-    async (event) => {
+    async event => {
 
       event.preventDefault();
 
 
-      /*
-      Prevent double clicking
-      */
+      // -----------------------------------------------
+      // DATE CHECK FIRST
+      // -----------------------------------------------
 
       if (
-        submitBtn.disabled
+        !validateBookingDate()
       ) {
+
         return;
+
       }
 
 
-      /*
-      Validate date
-      */
-
-      if (!isValidDate()) {
-        return;
-      }
-
-
-      /*
-      Validate location
-      */
+      // -----------------------------------------------
+      // LOCATION CHECK
+      // -----------------------------------------------
 
       if (
         customerLatitude === null ||
@@ -540,9 +520,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      /*
-      Validate delivery calculation
-      */
+      // -----------------------------------------------
+      // DELIVERY CHECK
+      // -----------------------------------------------
 
       if (
         calculatedDistanceKm === null ||
@@ -550,16 +530,16 @@ document.addEventListener("DOMContentLoaded", () => {
       ) {
 
         alert(
-          "Please calculate the delivery first."
+          "Please calculate your delivery first."
         );
 
         return;
       }
 
 
-      /*
-      Validate Supabase configuration
-      */
+      // -----------------------------------------------
+      // SUPABASE CHECK
+      // -----------------------------------------------
 
       if (
         typeof supabaseClient ===
@@ -567,20 +547,16 @@ document.addEventListener("DOMContentLoaded", () => {
       ) {
 
         alert(
-          "❌ Supabase is not configured. Please check config.js."
-        );
-
-        console.error(
-          "supabaseClient is undefined."
+          "❌ Supabase is not configured.\n\nPlease check your config.js file."
         );
 
         return;
       }
 
 
-      /*
-      Get form values
-      */
+      // -----------------------------------------------
+      // FORM VALUES
+      // -----------------------------------------------
 
       const customerName =
         nameInput.value.trim();
@@ -598,66 +574,42 @@ document.addEventListener("DOMContentLoaded", () => {
         addressInput.value.trim();
 
 
-      /*
-      Basic validation
-      */
+      // -----------------------------------------------
+      // FINAL DATE CHECK
+      // -----------------------------------------------
 
-      if (!customerName) {
+      const today =
+        getTodayLocalDate();
+
+
+      if (
+        rentalDate < today
+      ) {
 
         alert(
-          "Please enter your name."
+          "❌ Booking rejected.\n\n" +
+          "You selected a date that has already passed."
         );
+
+        dateInput.value = "";
 
         return;
       }
 
 
-      if (!contactNumber) {
-
-        alert(
-          "Please enter your contact number."
-        );
-
-        return;
-      }
-
-
-      if (!packageName) {
-
-        alert(
-          "Please select a package."
-        );
-
-        return;
-      }
-
-
-      if (!deliveryAddress) {
-
-        alert(
-          "Please enter your delivery address."
-        );
-
-        return;
-      }
-
-
-      /*
-      Disable button
-      */
+      // -----------------------------------------------
+      // DISABLE BUTTON
+      // -----------------------------------------------
 
       submitBtn.disabled = true;
-
-      const originalButtonText =
-        "Send Booking Request";
 
       submitBtn.textContent =
         "Sending Booking...";
 
 
-      /*
-      Booking data
-      */
+      // -----------------------------------------------
+      // BOOKING DATA
+      // -----------------------------------------------
 
       const bookingData = {
 
@@ -693,37 +645,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
         status:
           "Pending"
+
       };
 
 
       console.log(
-        "Booking data:",
+        "Submitting booking:",
         bookingData
       );
 
 
-      /*
-      =====================================================
-      SAVE TO SUPABASE
-      =====================================================
-      */
+      // -----------------------------------------------
+      // SUPABASE INSERT
+      // -----------------------------------------------
 
       try {
 
         const {
           data,
           error
-        } = await supabaseClient
-          .from("bookings")
-          .insert([
-            bookingData
-          ])
-          .select();
+        } =
+          await supabaseClient
+            .from("bookings")
+            .insert([
+              bookingData
+            ])
+            .select();
 
-
-        /*
-        Supabase returned an error
-        */
 
         if (error) {
 
@@ -732,10 +680,8 @@ document.addEventListener("DOMContentLoaded", () => {
             error
           );
 
-
           throw new Error(
-            error.message ||
-            "Supabase could not save the booking."
+            error.message
           );
         }
 
@@ -746,103 +692,89 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        /*
-        ===================================================
-        SUCCESS
-        ===================================================
-        */
+        // ---------------------------------------------
+        // SUCCESS
+        // ---------------------------------------------
+
+        alert(
+          "✅ BOOKING SUCCESSFUL!\n\n" +
+          "Your booking request has been received.\n\n" +
+          "Status: Pending\n\n" +
+          "JEPOY'S JBL PARTYBOX will contact you shortly to confirm your booking."
+        );
+
 
         submitBtn.textContent =
           "Booking Sent ✓";
 
 
+        // ---------------------------------------------
+        // MESSENGER MESSAGE
+        // ---------------------------------------------
+
         const messengerMessage =
-          `Hello JEPOY'S JBL PARTYBOX!%0A%0A` +
+          `Hello JEPOY'S JBL PARTYBOX!\n\n` +
 
-          `I would like to make a booking.%0A%0A` +
+          `I would like to make a booking.\n\n` +
 
-          `Name: ${encodeURIComponent(customerName)}%0A` +
+          `Name: ${customerName}\n` +
 
-          `Contact: ${encodeURIComponent(contactNumber)}%0A` +
+          `Contact: ${contactNumber}\n` +
 
-          `Package: ${encodeURIComponent(packageName)}%0A` +
+          `Package: ${packageName}\n` +
 
-          `Date: ${encodeURIComponent(rentalDate)}%0A` +
+          `Date: ${rentalDate}\n` +
 
-          `Address: ${encodeURIComponent(deliveryAddress)}%0A` +
+          `Address: ${deliveryAddress}\n` +
 
-          `Distance: ${encodeURIComponent(calculatedDistanceKm + " km")}%0A` +
+          `Distance: ${calculatedDistanceKm} km\n` +
 
-          `Delivery Fee: ${encodeURIComponent(
+          `Delivery Fee: ${
             calculatedDeliveryFee === 0
               ? "FREE"
-              : formatPeso(calculatedDeliveryFee)
-          )}%0A%0A` +
+              : formatPeso(
+                  calculatedDeliveryFee
+                )
+          }\n\n` +
 
-          `Google Maps Location:%0A` +
+          `Google Maps Location:\n` +
 
-          `${encodeURIComponent(googleMapsLink)}`;
+          googleMapsLink;
 
-
-        /*
-        Show confirmation
-        */
-
-        alert(
-          "✅ Booking successfully sent!\n\n" +
-          "Your booking status is Pending.\n\n" +
-          "JEPOY'S JBL PARTYBOX will contact you shortly to confirm your booking."
-        );
-
-
-        /*
-        Optional Messenger redirect
-        */
 
         const messengerURL =
-          `https://m.me/1218332498024792?text=${messengerMessage}`;
+          "https://m.me/1218332498024792?text=" +
+          encodeURIComponent(
+            messengerMessage
+          );
 
 
-        const openMessenger =
+        const sendMessenger =
           confirm(
             "Would you also like to send the booking details through Facebook Messenger?"
           );
 
 
-        if (openMessenger) {
+        if (sendMessenger) {
 
           window.open(
             messengerURL,
             "_blank"
           );
+
         }
 
 
-        /*
-        Reset form
-        */
+        // ---------------------------------------------
+        // RESET
+        // ---------------------------------------------
 
         bookingForm.reset();
 
-
-        /*
-        Restore today's minimum date
-        */
-
-        dateInput.min =
-          getTodayLocalDate();
-
-
-        /*
-        Reset location
-        */
-
         customerLatitude = null;
-
         customerLongitude = null;
 
         calculatedDistanceKm = null;
-
         calculatedDeliveryFee = null;
 
         googleMapsLink = "";
@@ -858,13 +790,11 @@ document.addEventListener("DOMContentLoaded", () => {
           "Tap the button to calculate your distance.";
 
 
-      } catch (error) {
+        // Reapply today's date limit
+        setDateLimit();
 
-        /*
-        ===================================================
-        ERROR
-        ===================================================
-        */
+
+      } catch (error) {
 
         console.error(
           "BOOKING ERROR:",
@@ -872,82 +802,47 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        let errorMessage =
+        let message =
           error.message ||
           "Unknown error";
 
 
-        /*
-        Special message for network errors
-        */
-
         if (
-          errorMessage
+          message
             .toLowerCase()
-            .includes("failed to fetch")
+            .includes(
+              "failed to fetch"
+            )
         ) {
 
-          errorMessage =
+          message =
             "The website could not connect to Supabase.\n\n" +
-            "Please check your Supabase URL, API key, Internet connection, and Supabase settings.";
+            "Check your Supabase URL, API key, internet connection, and Supabase settings.";
+
         }
 
 
         alert(
           "❌ Booking could not be saved.\n\n" +
-          errorMessage
+          message
         );
 
 
-        /*
-        Restore button
-        */
-
-        submitBtn.disabled = false;
+        submitBtn.disabled =
+          false;
 
         submitBtn.textContent =
-          originalButtonText;
+          "Send Booking Request";
+
       }
 
     }
   );
 
 
-  /*
-  ========================================================
-  AUTOMATIC DATE CHECK
-  ========================================================
-  
-  This runs whenever the page becomes visible again.
-  It prevents yesterday's date from remaining selectable.
-  
-  ========================================================
-  */
-
-  function refreshMinimumDate() {
-
-    const currentDate =
-      getTodayLocalDate();
-
-    dateInput.min =
-      currentDate;
-
-
-    if (
-      dateInput.value &&
-      dateInput.value < currentDate
-    ) {
-
-      dateInput.value = "";
-
-      distanceDisplay.textContent =
-        "Not calculated";
-
-      feeDisplay.textContent =
-        "Not calculated";
-    }
-  }
-
+  // =====================================================
+  // REFRESH DATE WHEN PAGE BECOMES ACTIVE
+  // =====================================================
 
   document.addEventListener(
     "visibilitychange",
@@ -958,7 +853,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "visible"
       ) {
 
-        refreshMinimumDate();
+        setDateLimit();
 
       }
 
@@ -966,17 +861,8 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
 
-  /*
-  ========================================================
-  INITIAL DATE SETUP
-  ========================================================
-  */
-
-  refreshMinimumDate();
-
-
   console.log(
-    "Booking system ready."
+    "JEPOY'S JBL PARTYBOX booking system ready."
   );
 
 });

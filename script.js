@@ -9,157 +9,590 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
-  // ELEMENTS
+  // FORM ELEMENTS
   // =====================================================
 
-  const bookingForm = document.getElementById("bookingForm");
-  const nameInput = document.getElementById("name");
-  const phoneInput = document.getElementById("phone");
-  const packageInput = document.getElementById("package");
-  const dateInput = document.getElementById("date");
-  const addressInput = document.getElementById("address");
+  const bookingForm =
+    document.getElementById("bookingForm");
 
-  const locationBtn = document.getElementById("locationBtn");
-  const calculateBtn = document.getElementById("calc");
-  const submitBtn = document.getElementById("submitBooking");
+  const nameInput =
+    document.getElementById("name");
 
-  const distanceDisplay = document.getElementById("distance");
-  const feeDisplay = document.getElementById("fee");
-  const resultDisplay = document.getElementById("result");
+  const phoneInput =
+    document.getElementById("phone");
+
+  const packageInput =
+    document.getElementById("package");
+
+  const dateInput =
+    document.getElementById("date");
+
+  const dateDisplay =
+    document.getElementById("dateDisplay");
+
+  const addressInput =
+    document.getElementById("address");
+
+  const locationBtn =
+    document.getElementById("locationBtn");
+
+  const calculateBtn =
+    document.getElementById("calc");
+
+  const submitBtn =
+    document.getElementById("submitBooking");
+
+  const distanceDisplay =
+    document.getElementById("distance");
+
+  const feeDisplay =
+    document.getElementById("fee");
+
+  const resultDisplay =
+    document.getElementById("result");
 
 
   // =====================================================
-  // GET TODAY - PHILIPPINES LOCAL DATE
+  // CUSTOM CALENDAR ELEMENTS
   // =====================================================
 
-  function getTodayLocalDate() {
+  const calendarOverlay =
+    document.getElementById(
+      "calendarOverlay"
+    );
+
+  const calendarTitle =
+    document.getElementById(
+      "calendarTitle"
+    );
+
+  const calendarSelected =
+    document.getElementById(
+      "calendarSelected"
+    );
+
+  const calendarDays =
+    document.getElementById(
+      "calendarDays"
+    );
+
+  const calendarPrev =
+    document.getElementById(
+      "calendarPrev"
+    );
+
+  const calendarNext =
+    document.getElementById(
+      "calendarNext"
+    );
+
+  const calendarCancel =
+    document.getElementById(
+      "calendarCancel"
+    );
+
+  const calendarToday =
+    document.getElementById(
+      "calendarToday"
+    );
+
+
+  // =====================================================
+  // DATE FUNCTIONS
+  // =====================================================
+
+  function getToday() {
 
     const now = new Date();
 
-    const year = now.getFullYear();
-
-    const month = String(
-      now.getMonth() + 1
-    ).padStart(2, "0");
-
-    const day = String(
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
       now.getDate()
-    ).padStart(2, "0");
+    );
+
+  }
+
+
+  function dateToString(date) {
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
+
+  }
+
+
+  function stringToDate(value) {
+
+    if (!value) {
+      return null;
+    }
+
+    const parts =
+      value.split("-");
+
+    return new Date(
+      Number(parts[0]),
+      Number(parts[1]) - 1,
+      Number(parts[2])
+    );
+
+  }
+
+
+  function formatDisplayDate(date) {
+
+    return date.toLocaleDateString(
+      "en-US",
+      {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      }
+    );
+
   }
 
 
   // =====================================================
-  // SET DATE LIMIT
+  // CALENDAR STATE
   // =====================================================
 
-  function setDateLimit() {
+  const today =
+    getToday();
 
-    const today = getTodayLocalDate();
-
-    dateInput.setAttribute(
-      "min",
-      today
+  let calendarMonth =
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
     );
 
+
+  // =====================================================
+  // OPEN CALENDAR
+  // =====================================================
+
+  function openCalendar() {
+
     /*
-    If an old date is currently selected,
-    immediately remove it.
+    Always make sure the calendar
+    starts at the current month if
+    there is no selected date.
+    */
+
+    const selected =
+      stringToDate(
+        dateInput.value
+      );
+
+
+    if (selected) {
+
+      calendarMonth =
+        new Date(
+          selected.getFullYear(),
+          selected.getMonth(),
+          1
+        );
+
+    } else {
+
+      calendarMonth =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        );
+
+    }
+
+
+    calendarOverlay.hidden =
+      false;
+
+    document.body.style.overflow =
+      "hidden";
+
+    renderCalendar();
+
+  }
+
+
+  // =====================================================
+  // CLOSE CALENDAR
+  // =====================================================
+
+  function closeCalendar() {
+
+    calendarOverlay.hidden =
+      true;
+
+    document.body.style.overflow =
+      "";
+
+  }
+
+
+  // =====================================================
+  // RENDER CALENDAR
+  // =====================================================
+
+  function renderCalendar() {
+
+    const year =
+      calendarMonth.getFullYear();
+
+    const month =
+      calendarMonth.getMonth();
+
+
+    // -----------------------------------------------
+    // TITLE
+    // -----------------------------------------------
+
+    calendarTitle.textContent =
+      calendarMonth.toLocaleDateString(
+        "en-US",
+        {
+          month: "long",
+          year: "numeric"
+        }
+      );
+
+
+    // -----------------------------------------------
+    // SELECTED DATE TEXT
+    // -----------------------------------------------
+
+    const selectedDate =
+      stringToDate(
+        dateInput.value
+      );
+
+
+    if (selectedDate) {
+
+      calendarSelected.textContent =
+        formatDisplayDate(
+          selectedDate
+        );
+
+    } else {
+
+      calendarSelected.textContent =
+        "Select a date";
+
+    }
+
+
+    // -----------------------------------------------
+    // PREVIOUS MONTH
+    // -----------------------------------------------
+
+    const currentMonth =
+      new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+      );
+
+
+    if (
+      calendarMonth <=
+      currentMonth
+    ) {
+
+      calendarPrev.disabled =
+        true;
+
+    } else {
+
+      calendarPrev.disabled =
+        false;
+
+    }
+
+
+    // -----------------------------------------------
+    // CLEAR DAYS
+    // -----------------------------------------------
+
+    calendarDays.innerHTML =
+      "";
+
+
+    // -----------------------------------------------
+    // FIRST DAY OF MONTH
+    // -----------------------------------------------
+
+    const firstDay =
+      new Date(
+        year,
+        month,
+        1
+      ).getDay();
+
+
+    // -----------------------------------------------
+    // NUMBER OF DAYS
+    // -----------------------------------------------
+
+    const daysInMonth =
+      new Date(
+        year,
+        month + 1,
+        0
+      ).getDate();
+
+
+    // -----------------------------------------------
+    // EMPTY DAYS
+    // -----------------------------------------------
+
+    for (
+      let i = 0;
+      i < firstDay;
+      i++
+    ) {
+
+      const empty =
+        document.createElement(
+          "div"
+        );
+
+      empty.className =
+        "calendar-empty";
+
+      calendarDays.appendChild(
+        empty
+      );
+
+    }
+
+
+    // -----------------------------------------------
+    // CREATE DAYS
+    // -----------------------------------------------
+
+    for (
+      let day = 1;
+      day <= daysInMonth;
+      day++
+    ) {
+
+      const date =
+        new Date(
+          year,
+          month,
+          day
+        );
+
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.type =
+        "button";
+
+      button.className =
+        "calendar-day";
+
+      button.textContent =
+        day;
+
+
+      // ---------------------------------------------
+      // PAST DATE
+      // ---------------------------------------------
+
+      if (
+        date < today
+      ) {
+
+        button.classList.add(
+          "past"
+        );
+
+        button.disabled =
+          true;
+
+      }
+
+
+      // ---------------------------------------------
+      // TODAY
+      // ---------------------------------------------
+
+      if (
+        date.getTime() ===
+        today.getTime()
+      ) {
+
+        button.classList.add(
+          "today"
+        );
+
+      }
+
+
+      // ---------------------------------------------
+      // SELECTED
+      // ---------------------------------------------
+
+      if (
+        selectedDate &&
+        date.getTime() ===
+        selectedDate.getTime()
+      ) {
+
+        button.classList.add(
+          "selected"
+        );
+
+      }
+
+
+      // ---------------------------------------------
+      // DATE CLICK
+      // ---------------------------------------------
+
+      if (
+        date >= today
+      ) {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            selectDate(date);
+
+          }
+        );
+
+      }
+
+
+      calendarDays.appendChild(
+        button
+      );
+
+    }
+
+  }
+
+
+  // =====================================================
+  // SELECT DATE
+  // =====================================================
+
+  function selectDate(date) {
+
+    /*
+    Absolute safety check.
     */
 
     if (
-      dateInput.value &&
-      dateInput.value < today
+      date < today
     ) {
 
-      dateInput.value = "";
+      return;
 
     }
 
-    console.log(
-      "Minimum booking date:",
-      today
-    );
-  }
+
+    const value =
+      dateToString(date);
 
 
-  // Set immediately
-  setDateLimit();
+    /*
+    Hidden value sent to Supabase.
+    */
+
+    dateInput.value =
+      value;
 
 
-  // =====================================================
-  // DATE VALIDATION
-  // =====================================================
+    /*
+    Visible value.
+    */
 
-  function validateBookingDate() {
-
-    const today = getTodayLocalDate();
-
-    const selectedDate = dateInput.value;
+    dateDisplay.value =
+      formatDisplayDate(date);
 
 
-    // No date
-    if (!selectedDate) {
-
-      alert(
-        "Please select a rental date."
-      );
-
-      return false;
-    }
+    calendarSelected.textContent =
+      formatDisplayDate(date);
 
 
-    // PAST DATE
-    if (selectedDate < today) {
+    closeCalendar();
 
-      alert(
-        "❌ This date has already passed.\n\n" +
-        "Please select September 4, 2026 or a later date."
-      );
-
-      // Remove invalid date
-      dateInput.value = "";
-
-      // Re-apply minimum
-      dateInput.setAttribute(
-        "min",
-        today
-      );
-
-      return false;
-    }
-
-
-    return true;
   }
 
 
   // =====================================================
-  // EXTRA PROTECTION WHEN DATE CHANGES
+  // OPEN DATE PICKER
   // =====================================================
 
-  dateInput.addEventListener(
-    "change",
+  dateDisplay.addEventListener(
+    "click",
+    openCalendar
+  );
+
+
+  // =====================================================
+  // PREVIOUS MONTH
+  // =====================================================
+
+  calendarPrev.addEventListener(
+    "click",
     () => {
 
-      const today = getTodayLocalDate();
+      const currentMonth =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        );
+
+
+      const previousMonth =
+        new Date(
+          calendarMonth.getFullYear(),
+          calendarMonth.getMonth() - 1,
+          1
+        );
+
+
+      /*
+      NEVER allow navigation
+      before current month.
+      */
 
       if (
-        dateInput.value &&
-        dateInput.value < today
+        previousMonth >=
+        currentMonth
       ) {
 
-        alert(
-          "❌ You cannot select a past date."
-        );
+        calendarMonth =
+          previousMonth;
 
-        dateInput.value = "";
-
-        dateInput.setAttribute(
-          "min",
-          today
-        );
+        renderCalendar();
 
       }
 
@@ -167,19 +600,88 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
 
-  // Also check whenever the date input receives input
-  dateInput.addEventListener(
-    "input",
+  // =====================================================
+  // NEXT MONTH
+  // =====================================================
+
+  calendarNext.addEventListener(
+    "click",
     () => {
 
-      const today = getTodayLocalDate();
+      calendarMonth =
+        new Date(
+          calendarMonth.getFullYear(),
+          calendarMonth.getMonth() + 1,
+          1
+        );
+
+      renderCalendar();
+
+    }
+  );
+
+
+  // =====================================================
+  // CANCEL
+  // =====================================================
+
+  calendarCancel.addEventListener(
+    "click",
+    closeCalendar
+  );
+
+
+  // =====================================================
+  // TODAY BUTTON
+  // =====================================================
+
+  calendarToday.addEventListener(
+    "click",
+    () => {
+
+      selectDate(
+        getToday()
+      );
+
+    }
+  );
+
+
+  // =====================================================
+  // CLICK OUTSIDE CALENDAR
+  // =====================================================
+
+  calendarOverlay.addEventListener(
+    "click",
+    event => {
 
       if (
-        dateInput.value &&
-        dateInput.value < today
+        event.target ===
+        calendarOverlay
       ) {
 
-        dateInput.value = "";
+        closeCalendar();
+
+      }
+
+    }
+  );
+
+
+  // =====================================================
+  // ESCAPE KEY
+  // =====================================================
+
+  document.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Escape" &&
+        !calendarOverlay.hidden
+      ) {
+
+        closeCalendar();
 
       }
 
@@ -198,7 +700,8 @@ document.addEventListener("DOMContentLoaded", () => {
     lon2
   ) {
 
-    const earthRadius = 6371;
+    const earthRadius =
+      6371;
 
     const dLat =
       (lat2 - lat1) *
@@ -211,8 +714,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const a =
       Math.sin(dLat / 2) ** 2 +
 
-      Math.cos(lat1 * Math.PI / 180) *
-      Math.cos(lat2 * Math.PI / 180) *
+      Math.cos(
+        lat1 * Math.PI / 180
+      ) *
+
+      Math.cos(
+        lat2 * Math.PI / 180
+      ) *
+
       Math.sin(dLon / 2) ** 2;
 
     const c =
@@ -223,6 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
     return earthRadius * c;
+
   }
 
 
@@ -230,30 +740,41 @@ document.addEventListener("DOMContentLoaded", () => {
   // DELIVERY FEE
   // =====================================================
 
-  function calculateDeliveryFee(distanceKm) {
+  function calculateDeliveryFee(
+    distanceKm
+  ) {
 
-    if (distanceKm <= 5) {
+    if (
+      distanceKm <= 5
+    ) {
 
       return 0;
 
     }
 
-    if (distanceKm <= 8) {
+
+    if (
+      distanceKm <= 8
+    ) {
 
       return 100;
 
     }
 
+
     const additionalKm =
       distanceKm - 8;
+
 
     const additionalBlocks =
       Math.ceil(
         additionalKm / 3
       );
 
+
     return 100 +
       additionalBlocks * 50;
+
   }
 
 
@@ -264,9 +785,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function formatPeso(amount) {
 
     return "₱" +
-      Number(amount).toLocaleString(
-        "en-PH"
-      );
+      Number(amount)
+        .toLocaleString(
+          "en-PH"
+        );
+
   }
 
 
@@ -274,13 +797,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // LOCATION VARIABLES
   // =====================================================
 
-  let customerLatitude = null;
-  let customerLongitude = null;
+  let customerLatitude =
+    null;
 
-  let calculatedDistanceKm = null;
-  let calculatedDeliveryFee = null;
+  let customerLongitude =
+    null;
 
-  let googleMapsLink = "";
+  let calculatedDistanceKm =
+    null;
+
+  let calculatedDeliveryFee =
+    null;
+
+  let googleMapsLink =
+    "";
 
 
   // =====================================================
@@ -292,8 +822,12 @@ document.addEventListener("DOMContentLoaded", () => {
     longitude
   ) {
 
-    customerLatitude = latitude;
-    customerLongitude = longitude;
+    customerLatitude =
+      latitude;
+
+    customerLongitude =
+      longitude;
+
 
     calculatedDistanceKm =
       calculateDistanceKm(
@@ -303,15 +837,18 @@ document.addEventListener("DOMContentLoaded", () => {
         longitude
       );
 
+
     calculatedDistanceKm =
       Number(
         calculatedDistanceKm.toFixed(2)
       );
 
+
     calculatedDeliveryFee =
       calculateDeliveryFee(
         calculatedDistanceKm
       );
+
 
     googleMapsLink =
       `https://www.google.com/maps?q=${latitude},${longitude}`;
@@ -338,29 +875,36 @@ document.addEventListener("DOMContentLoaded", () => {
       <b>${
         calculatedDeliveryFee === 0
           ? "FREE"
-          : formatPeso(calculatedDeliveryFee)
+          : formatPeso(
+              calculatedDeliveryFee
+            )
       }</b>
       `;
+
   }
 
 
   // =====================================================
-  // GPS
+  // GET GPS LOCATION
   // =====================================================
 
   function getCurrentLocation() {
 
-    if (!navigator.geolocation) {
+    if (
+      !navigator.geolocation
+    ) {
 
       alert(
         "❌ Your browser does not support location services."
       );
 
       return;
+
     }
 
 
-    locationBtn.disabled = true;
+    locationBtn.disabled =
+      true;
 
     locationBtn.textContent =
       "📍 Getting Location...";
@@ -375,10 +919,13 @@ document.addEventListener("DOMContentLoaded", () => {
           position.coords.longitude
         );
 
-        locationBtn.disabled = false;
+
+        locationBtn.disabled =
+          false;
 
         locationBtn.textContent =
           "📍 Location Detected";
+
       },
 
 
@@ -389,7 +936,9 @@ document.addEventListener("DOMContentLoaded", () => {
           error
         );
 
-        locationBtn.disabled = false;
+
+        locationBtn.disabled =
+          false;
 
         locationBtn.textContent =
           "📍 Use My Current Location";
@@ -407,7 +956,10 @@ document.addEventListener("DOMContentLoaded", () => {
           message =
             "❌ Location permission was denied. Please allow location access for this website.";
 
-        } else if (
+        }
+
+
+        else if (
           error.code ===
           error.POSITION_UNAVAILABLE
         ) {
@@ -415,17 +967,22 @@ document.addEventListener("DOMContentLoaded", () => {
           message =
             "❌ Your location is currently unavailable.";
 
-        } else if (
+        }
+
+
+        else if (
           error.code ===
           error.TIMEOUT
         ) {
 
           message =
             "❌ Location request timed out. Please try again.";
+
         }
 
 
         alert(message);
+
       },
 
 
@@ -436,6 +993,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
     );
+
   }
 
 
@@ -467,6 +1025,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
+
       }
 
 
@@ -480,7 +1039,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
-  // FORM SUBMIT
+  // SUBMIT BOOKING
   // =====================================================
 
   bookingForm.addEventListener(
@@ -491,12 +1050,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       // -----------------------------------------------
-      // DATE CHECK FIRST
+      // DATE VALIDATION
       // -----------------------------------------------
 
+      const selectedDate =
+        stringToDate(
+          dateInput.value
+        );
+
+
       if (
-        !validateBookingDate()
+        !selectedDate
       ) {
+
+        alert(
+          "📅 Please select a rental date."
+        );
+
+        openCalendar();
+
+        return;
+
+      }
+
+
+      if (
+        selectedDate < today
+      ) {
+
+        alert(
+          "❌ You cannot book a date that has already passed."
+        );
+
+        dateInput.value = "";
+
+        dateDisplay.value = "";
+
+        openCalendar();
 
         return;
 
@@ -504,7 +1094,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       // -----------------------------------------------
-      // LOCATION CHECK
+      // LOCATION
       // -----------------------------------------------
 
       if (
@@ -517,11 +1107,12 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
+
       }
 
 
       // -----------------------------------------------
-      // DELIVERY CHECK
+      // DELIVERY
       // -----------------------------------------------
 
       if (
@@ -534,11 +1125,12 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
+
       }
 
 
       // -----------------------------------------------
-      // SUPABASE CHECK
+      // SUPABASE
       // -----------------------------------------------
 
       if (
@@ -547,15 +1139,16 @@ document.addEventListener("DOMContentLoaded", () => {
       ) {
 
         alert(
-          "❌ Supabase is not configured.\n\nPlease check your config.js file."
+          "❌ Supabase is not configured. Please check config.js."
         );
 
         return;
+
       }
 
 
       // -----------------------------------------------
-      // FORM VALUES
+      // VALUES
       // -----------------------------------------------
 
       const customerName =
@@ -575,33 +1168,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       // -----------------------------------------------
-      // FINAL DATE CHECK
-      // -----------------------------------------------
-
-      const today =
-        getTodayLocalDate();
-
-
-      if (
-        rentalDate < today
-      ) {
-
-        alert(
-          "❌ Booking rejected.\n\n" +
-          "You selected a date that has already passed."
-        );
-
-        dateInput.value = "";
-
-        return;
-      }
-
-
-      // -----------------------------------------------
       // DISABLE BUTTON
       // -----------------------------------------------
 
-      submitBtn.disabled = true;
+      submitBtn.disabled =
+        true;
 
       submitBtn.textContent =
         "Sending Booking...";
@@ -656,7 +1227,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       // -----------------------------------------------
-      // SUPABASE INSERT
+      // SAVE TO SUPABASE
       // -----------------------------------------------
 
       try {
@@ -683,6 +1254,7 @@ document.addEventListener("DOMContentLoaded", () => {
           throw new Error(
             error.message
           );
+
         }
 
 
@@ -700,16 +1272,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "✅ BOOKING SUCCESSFUL!\n\n" +
           "Your booking request has been received.\n\n" +
           "Status: Pending\n\n" +
-          "JEPOY'S JBL PARTYBOX will contact you shortly to confirm your booking."
+          "JEPOY'S JBL PARTYBOX will contact you shortly."
         );
 
 
-        submitBtn.textContent =
-          "Booking Sent ✓";
-
-
         // ---------------------------------------------
-        // MESSENGER MESSAGE
+        // MESSENGER
         // ---------------------------------------------
 
         const messengerMessage =
@@ -755,7 +1323,9 @@ document.addEventListener("DOMContentLoaded", () => {
           );
 
 
-        if (sendMessenger) {
+        if (
+          sendMessenger
+        ) {
 
           window.open(
             messengerURL,
@@ -771,13 +1341,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         bookingForm.reset();
 
-        customerLatitude = null;
-        customerLongitude = null;
+        dateInput.value =
+          "";
 
-        calculatedDistanceKm = null;
-        calculatedDeliveryFee = null;
+        dateDisplay.value =
+          "";
 
-        googleMapsLink = "";
+        customerLatitude =
+          null;
+
+        customerLongitude =
+          null;
+
+        calculatedDistanceKm =
+          null;
+
+        calculatedDeliveryFee =
+          null;
+
+        googleMapsLink =
+          "";
 
 
         distanceDisplay.textContent =
@@ -790,11 +1373,17 @@ document.addEventListener("DOMContentLoaded", () => {
           "Tap the button to calculate your distance.";
 
 
-        // Reapply today's date limit
-        setDateLimit();
+        submitBtn.disabled =
+          false;
+
+        submitBtn.textContent =
+          "Send Booking Request";
 
 
-      } catch (error) {
+      }
+
+
+      catch (error) {
 
         console.error(
           "BOOKING ERROR:",
@@ -841,28 +1430,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
-  // REFRESH DATE WHEN PAGE BECOMES ACTIVE
+  // INITIALIZE
   // =====================================================
 
-  document.addEventListener(
-    "visibilitychange",
-    () => {
-
-      if (
-        document.visibilityState ===
-        "visible"
-      ) {
-
-        setDateLimit();
-
-      }
-
-    }
-  );
-
-
   console.log(
-    "JEPOY'S JBL PARTYBOX booking system ready."
+    "JEPOY'S JBL PARTYBOX custom calendar ready."
   );
 
 });

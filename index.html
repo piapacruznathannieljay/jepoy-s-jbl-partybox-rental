@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
 
@@ -35,22 +36,27 @@
 
 <header>
 
-  <a href="#home" class="logo">
+  <a
+    href="#home"
+    class="logo"
+  >
     JEPOY'S <span>JBL PARTYBOX</span>
   </a>
 
-  <a href="#reserve" class="topbtn">
+  <a
+    href="#reserve"
+    class="topbtn"
+  >
     Reserve
   </a>
 
 </header>
 
 
-<!-- =========================
-     HERO
-========================= -->
-
-<section class="hero" id="home">
+<section
+  class="hero"
+  id="home"
+>
 
   <p class="orange">
     SOUND • MOVIE MARATHON • SING • PARTY
@@ -67,21 +73,25 @@
   </p>
 
   <div>
-    <a href="#packages" class="btn">
+
+    <a
+      href="#packages"
+      class="btn"
+    >
       View Packages
     </a>
 
-    <a href="#reserve" class="btn dark">
+    <a
+      href="#reserve"
+      class="btn dark"
+    >
       Book Now
     </a>
+
   </div>
 
 </section>
 
-
-<!-- =========================
-     PACKAGES
-========================= -->
 
 <section id="packages">
 
@@ -93,11 +103,7 @@
     Rental Packages
   </h2>
 
-
   <div class="cards">
-
-
-    <!-- PACKAGE 1 -->
 
     <article>
 
@@ -111,17 +117,11 @@
 
       <ul>
 
-        <li>
-          JBL PartyBox Ultimate
-        </li>
+        <li>JBL PartyBox Ultimate</li>
 
-        <li>
-          2 wireless microphones
-        </li>
+        <li>2 wireless microphones</li>
 
-        <li>
-          Music & small parties
-        </li>
+        <li>Music & small parties</li>
 
       </ul>
 
@@ -149,8 +149,6 @@
     </article>
 
 
-    <!-- PACKAGE 2 -->
-
     <article class="featured">
 
       <small>
@@ -163,25 +161,15 @@
 
       <ul>
 
-        <li>
-          JBL PartyBox Ultimate
-        </li>
+        <li>JBL PartyBox Ultimate</li>
 
-        <li>
-          2 wireless microphones
-        </li>
+        <li>2 wireless microphones</li>
 
-        <li>
-          43″ Xiaomi Google TV
-        </li>
+        <li>43″ Xiaomi Google TV</li>
 
-        <li>
-          TV stand
-        </li>
+        <li>TV stand</li>
 
-        <li>
-          Premium entertainment subscriptions
-        </li>
+        <li>Premium entertainment subscriptions</li>
 
       </ul>
 
@@ -209,8 +197,6 @@
     </article>
 
 
-    <!-- FULL PACKAGE -->
-
     <article>
 
       <small>
@@ -223,29 +209,17 @@
 
       <ul>
 
-        <li>
-          JBL PartyBox Ultimate
-        </li>
+        <li>JBL PartyBox Ultimate</li>
 
-        <li>
-          2 wireless microphones
-        </li>
+        <li>2 wireless microphones</li>
 
-        <li>
-          43″ Xiaomi Google TV + stand
-        </li>
+        <li>43″ Xiaomi Google TV + stand</li>
 
-        <li>
-          Platinum karaoke system
-        </li>
+        <li>Platinum karaoke system</li>
 
-        <li>
-          23,000+ songs
-        </li>
+        <li>23,000+ songs</li>
 
-        <li>
-          Wired microphone & disco lights
-        </li>
+        <li>Wired microphone & disco lights</li>
 
       </ul>
 
@@ -277,10 +251,6 @@
 </section>
 
 
-<!-- =========================
-     FEATURES
-========================= -->
-
 <section>
 
   <p class="orange">
@@ -291,11 +261,12 @@
     Everything you need
   </h2>
 
-
   <div class="features">
 
     <div>
+
       🔊
+
       <h3>
         Powerful Sound
       </h3>
@@ -303,11 +274,13 @@
       <p>
         JBL PartyBox Ultimate.
       </p>
+
     </div>
 
-
     <div>
+
       🎤
+
       <h3>
         Karaoke
       </h3>
@@ -315,11 +288,13 @@
       <p>
         Wireless microphones and songs.
       </p>
+
     </div>
 
-
     <div>
+
       📺
+
       <h3>
         Movie Night
       </h3>
@@ -327,11 +302,13 @@
       <p>
         Smart TV entertainment.
       </p>
+
     </div>
 
-
     <div>
+
       ✨
+
       <h3>
         Party Lights
       </h3>
@@ -339,16 +316,13 @@
       <p>
         Disco lighting for your event.
       </p>
+
     </div>
 
   </div>
 
 </section>
 
-
-<!-- =========================
-     DELIVERY
-========================= -->
 
 <section>
 
@@ -359,7 +333,6 @@
   <h2>
     Automatic Delivery Fee
   </h2>
-
 
   <div class="delivery">
 
@@ -374,7 +347,6 @@
       ₱50 for every additional 3 km.
     </p>
 
-
     <button
       id="locationBtn"
       class="btn"
@@ -382,7 +354,6 @@
     >
       📍 Use My Current Location
     </button>
-
 
     <p id="result">
       Tap the button to calculate your distance.
@@ -392,10 +363,6 @@
 
 </section>
 
-
-<!-- =========================
-     RESERVATION
-========================= -->
 
 <section id="reserve">
 
@@ -407,9 +374,7 @@
     Book Your Party Setup
   </h2>
 
-
   <form id="bookingForm">
-
 
     <label>
 
@@ -418,6 +383,7 @@
       <input
         id="name"
         type="text"
+        autocomplete="name"
         required
       >
 
@@ -431,6 +397,8 @@
       <input
         id="phone"
         type="tel"
+        autocomplete="tel"
+        inputmode="tel"
         required
       >
 
@@ -450,15 +418,15 @@
           Select Package
         </option>
 
-        <option>
+        <option value="Package 1 - PartyBox Starter">
           Package 1 - PartyBox Starter
         </option>
 
-        <option>
+        <option value="Package 2 - Party + Movie">
           Package 2 - Party + Movie
         </option>
 
-        <option>
+        <option value="Full Package - Complete Party Setup">
           Full Package - Complete Party Setup
         </option>
 
@@ -470,6 +438,11 @@
     <label>
 
       Date
+
+      <!-- IMPORTANT:
+           Do NOT put a hardcoded min date here.
+           script.js sets today's date automatically.
+      -->
 
       <input
         id="date"
@@ -491,8 +464,6 @@
 
     </label>
 
-
-    <!-- DELIVERY SUMMARY -->
 
     <div class="summary">
 
@@ -527,11 +498,11 @@
 
     <button
       type="submit"
+      id="submitBooking"
       class="btn"
     >
       Send Booking Request
     </button>
-
 
   </form>
 
@@ -540,16 +511,13 @@
     class="messenger"
     href="https://m.me/1218332498024792"
     target="_blank"
+    rel="noopener"
   >
     💬 Message us on Facebook Messenger
   </a>
 
 </section>
 
-
-<!-- =========================
-     FOOTER
-========================= -->
 
 <footer>
 
@@ -558,29 +526,15 @@
 
 </footer>
 
+
 <!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- CONFIG -->
-
 <script src="config.js"></script>
-
-<!-- MAIN JAVASCRIPT -->
 
 <script src="script.js"></script>
 
-<!-- SERVICE WORKER -->
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js")
-      .then(() => console.log("Service Worker registered"))
-      .catch(error => console.error("Service Worker registration failed:", error));
-  });
-}
-</script>
-
 </body>
+
 </html>

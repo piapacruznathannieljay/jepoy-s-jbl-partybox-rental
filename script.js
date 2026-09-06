@@ -1,5 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+  /*
+  =========================================================
+  JEPOY'S JBL PARTYBOX
+  COMPLETE BOOKING SCRIPT
+  =========================================================
+  */
+
+
   // =====================================================
   // BUSINESS LOCATION
   // =====================================================
@@ -12,44 +20,54 @@ document.addEventListener("DOMContentLoaded", () => {
   // FORM ELEMENTS
   // =====================================================
 
-  const bookingForm =
-    document.getElementById("bookingForm");
+  const bookingForm = document.getElementById("bookingForm");
 
-  const nameInput =
-    document.getElementById("name");
+  const nameInput = document.getElementById("name");
 
-  const phoneInput =
-    document.getElementById("phone");
+  const phoneInput = document.getElementById("phone");
 
-  const packageInput =
-    document.getElementById("package");
+  const packageInput = document.getElementById("package");
 
-  const dateInput =
-    document.getElementById("date");
+  const dateInput = document.getElementById("date");
 
-  const dateDisplay =
-    document.getElementById("dateDisplay");
+  const dateDisplay = document.getElementById("dateDisplay");
 
-  const addressInput =
-    document.getElementById("address");
+  const addressInput = document.getElementById("address");
 
-  const locationBtn =
-    document.getElementById("locationBtn");
+  const locationBtn = document.getElementById("locationBtn");
 
-  const calculateBtn =
-    document.getElementById("calc");
+  const calculateBtn = document.getElementById("calc");
 
-  const submitBtn =
-    document.getElementById("submitBooking");
+  const submitBtn = document.getElementById("submitBooking");
 
-  const distanceDisplay =
-    document.getElementById("distance");
+  const distanceDisplay = document.getElementById("distance");
 
-  const feeDisplay =
-    document.getElementById("fee");
+  const feeDisplay = document.getElementById("fee");
 
-  const resultDisplay =
-    document.getElementById("result");
+  const resultDisplay = document.getElementById("result");
+
+
+  // =====================================================
+  // CHECK REQUIRED ELEMENTS
+  // =====================================================
+
+  if (!bookingForm) {
+    console.error("bookingForm was not found.");
+    return;
+  }
+
+  if (!dateInput) {
+    console.error("date input was not found.");
+    return;
+  }
+
+  if (!window.supabase) {
+    console.error("Supabase library was not loaded.");
+  }
+
+  if (typeof supabaseClient === "undefined") {
+    console.error("supabaseClient was not created. Check config.js.");
+  }
 
 
   // =====================================================
@@ -57,44 +75,28 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================
 
   const calendarOverlay =
-    document.getElementById(
-      "calendarOverlay"
-    );
+    document.getElementById("calendarOverlay");
 
   const calendarTitle =
-    document.getElementById(
-      "calendarTitle"
-    );
+    document.getElementById("calendarTitle");
 
   const calendarSelected =
-    document.getElementById(
-      "calendarSelected"
-    );
+    document.getElementById("calendarSelected");
 
   const calendarDays =
-    document.getElementById(
-      "calendarDays"
-    );
+    document.getElementById("calendarDays");
 
   const calendarPrev =
-    document.getElementById(
-      "calendarPrev"
-    );
+    document.getElementById("calendarPrev");
 
   const calendarNext =
-    document.getElementById(
-      "calendarNext"
-    );
+    document.getElementById("calendarNext");
 
   const calendarCancel =
-    document.getElementById(
-      "calendarCancel"
-    );
+    document.getElementById("calendarCancel");
 
   const calendarToday =
-    document.getElementById(
-      "calendarToday"
-    );
+    document.getElementById("calendarToday");
 
 
   // =====================================================
@@ -120,14 +122,10 @@ document.addEventListener("DOMContentLoaded", () => {
       date.getFullYear();
 
     const month =
-      String(
-        date.getMonth() + 1
-      ).padStart(2, "0");
+      String(date.getMonth() + 1).padStart(2, "0");
 
     const day =
-      String(
-        date.getDate()
-      ).padStart(2, "0");
+      String(date.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 
@@ -140,8 +138,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return null;
     }
 
-    const parts =
-      value.split("-");
+    const parts = value.split("-");
+
+    if (parts.length !== 3) {
+      return null;
+    }
 
     return new Date(
       Number(parts[0]),
@@ -170,8 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // CALENDAR STATE
   // =====================================================
 
-  const today =
-    getToday();
+  let today = getToday();
 
   let calendarMonth =
     new Date(
@@ -182,31 +182,120 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
+  // UPDATE TODAY
+  // =====================================================
+
+  function refreshToday() {
+
+    today = getToday();
+
+  }
+
+
+  // =====================================================
+  // SET DATE DISPLAY
+  // =====================================================
+
+  function setDateDisplay(date) {
+
+    const text = formatDisplayDate(date);
+
+    /*
+    Supports either:
+    - input
+    - button
+    - div
+    - span
+    */
+
+    if (
+      "value" in dateDisplay
+    ) {
+
+      dateDisplay.value = text;
+
+    } else {
+
+      dateDisplay.textContent = text;
+
+    }
+
+  }
+
+
+  // =====================================================
+  // CLEAR DATE DISPLAY
+  // =====================================================
+
+  function clearDateDisplay() {
+
+    if (
+      dateDisplay &&
+      "value" in dateDisplay
+    ) {
+
+      dateDisplay.value = "";
+
+    }
+
+    else if (dateDisplay) {
+
+      dateDisplay.textContent = "Select a date";
+
+    }
+
+  }
+
+
+  // =====================================================
   // OPEN CALENDAR
   // =====================================================
 
   function openCalendar() {
 
-    /*
-    Always make sure the calendar
-    starts at the current month if
-    there is no selected date.
-    */
+    if (!calendarOverlay) {
+      console.error("calendarOverlay was not found.");
+      return;
+    }
+
+    refreshToday();
 
     const selected =
-      stringToDate(
-        dateInput.value
-      );
+      stringToDate(dateInput.value);
 
 
     if (selected) {
 
-      calendarMonth =
+      /*
+      Never open the calendar
+      before the current month.
+      */
+
+      const currentMonth =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        );
+
+      const selectedMonth =
         new Date(
           selected.getFullYear(),
           selected.getMonth(),
           1
         );
+
+      if (selectedMonth < currentMonth) {
+
+        calendarMonth =
+          currentMonth;
+
+      } else {
+
+        calendarMonth =
+          selectedMonth;
+
+      }
 
     } else {
 
@@ -220,11 +309,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    calendarOverlay.hidden =
-      false;
+    calendarOverlay.hidden = false;
 
-    document.body.style.overflow =
-      "hidden";
+    document.body.style.overflow = "hidden";
 
     renderCalendar();
 
@@ -237,11 +324,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function closeCalendar() {
 
-    calendarOverlay.hidden =
-      true;
+    if (!calendarOverlay) {
+      return;
+    }
 
-    document.body.style.overflow =
-      "";
+    calendarOverlay.hidden = true;
+
+    document.body.style.overflow = "";
 
   }
 
@@ -252,6 +341,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderCalendar() {
 
+    if (
+      !calendarTitle ||
+      !calendarDays
+    ) {
+      return;
+    }
+
+    refreshToday();
+
     const year =
       calendarMonth.getFullYear();
 
@@ -259,9 +357,9 @@ document.addEventListener("DOMContentLoaded", () => {
       calendarMonth.getMonth();
 
 
-    // -----------------------------------------------
-    // TITLE
-    // -----------------------------------------------
+    // ===================================================
+    // CALENDAR TITLE
+    // ===================================================
 
     calendarTitle.textContent =
       calendarMonth.toLocaleDateString(
@@ -273,34 +371,38 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
 
-    // -----------------------------------------------
-    // SELECTED DATE TEXT
-    // -----------------------------------------------
+    // ===================================================
+    // SELECTED DATE
+    // ===================================================
 
     const selectedDate =
-      stringToDate(
-        dateInput.value
-      );
+      stringToDate(dateInput.value);
 
 
     if (selectedDate) {
 
-      calendarSelected.textContent =
-        formatDisplayDate(
-          selectedDate
-        );
+      if (calendarSelected) {
+
+        calendarSelected.textContent =
+          formatDisplayDate(selectedDate);
+
+      }
 
     } else {
 
-      calendarSelected.textContent =
-        "Select a date";
+      if (calendarSelected) {
+
+        calendarSelected.textContent =
+          "Select a date";
+
+      }
 
     }
 
 
-    // -----------------------------------------------
+    // ===================================================
     // PREVIOUS MONTH
-    // -----------------------------------------------
+    // ===================================================
 
     const currentMonth =
       new Date(
@@ -310,33 +412,24 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
 
-    if (
-      calendarMonth <=
-      currentMonth
-    ) {
+    if (calendarPrev) {
 
       calendarPrev.disabled =
-        true;
-
-    } else {
-
-      calendarPrev.disabled =
-        false;
+        calendarMonth <= currentMonth;
 
     }
 
 
-    // -----------------------------------------------
+    // ===================================================
     // CLEAR DAYS
-    // -----------------------------------------------
+    // ===================================================
 
-    calendarDays.innerHTML =
-      "";
+    calendarDays.innerHTML = "";
 
 
-    // -----------------------------------------------
-    // FIRST DAY OF MONTH
-    // -----------------------------------------------
+    // ===================================================
+    // FIRST DAY
+    // ===================================================
 
     const firstDay =
       new Date(
@@ -346,9 +439,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ).getDay();
 
 
-    // -----------------------------------------------
-    // NUMBER OF DAYS
-    // -----------------------------------------------
+    // ===================================================
+    // DAYS IN MONTH
+    // ===================================================
 
     const daysInMonth =
       new Date(
@@ -358,9 +451,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ).getDate();
 
 
-    // -----------------------------------------------
+    // ===================================================
     // EMPTY DAYS
-    // -----------------------------------------------
+    // ===================================================
 
     for (
       let i = 0;
@@ -369,23 +462,19 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
 
       const empty =
-        document.createElement(
-          "div"
-        );
+        document.createElement("div");
 
       empty.className =
         "calendar-empty";
 
-      calendarDays.appendChild(
-        empty
-      );
+      calendarDays.appendChild(empty);
 
     }
 
 
-    // -----------------------------------------------
+    // ===================================================
     // CREATE DAYS
-    // -----------------------------------------------
+    // ===================================================
 
     for (
       let day = 1;
@@ -402,58 +491,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       const button =
-        document.createElement(
-          "button"
-        );
+        document.createElement("button");
 
 
-      button.type =
-        "button";
+      button.type = "button";
 
-      button.className =
-        "calendar-day";
+      button.className = "calendar-day";
 
-      button.textContent =
-        day;
+      button.textContent = day;
 
 
-      // ---------------------------------------------
+      // =================================================
       // PAST DATE
-      // ---------------------------------------------
+      // =================================================
 
-      if (
-        date < today
-      ) {
+      if (date < today) {
 
-        button.classList.add(
-          "past"
-        );
+        button.classList.add("past");
 
-        button.disabled =
-          true;
+        button.disabled = true;
 
       }
 
 
-      // ---------------------------------------------
+      // =================================================
       // TODAY
-      // ---------------------------------------------
+      // =================================================
 
       if (
         date.getTime() ===
         today.getTime()
       ) {
 
-        button.classList.add(
-          "today"
-        );
+        button.classList.add("today");
 
       }
 
 
-      // ---------------------------------------------
+      // =================================================
       // SELECTED
-      // ---------------------------------------------
+      // =================================================
 
       if (
         selectedDate &&
@@ -461,20 +538,16 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedDate.getTime()
       ) {
 
-        button.classList.add(
-          "selected"
-        );
+        button.classList.add("selected");
 
       }
 
 
-      // ---------------------------------------------
-      // DATE CLICK
-      // ---------------------------------------------
+      // =================================================
+      // CLICK
+      // =================================================
 
-      if (
-        date >= today
-      ) {
+      if (date >= today) {
 
         button.addEventListener(
           "click",
@@ -488,9 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      calendarDays.appendChild(
-        button
-      );
+      calendarDays.appendChild(button);
 
     }
 
@@ -503,42 +574,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function selectDate(date) {
 
-    /*
-    Absolute safety check.
-    */
+    refreshToday();
 
-    if (
-      date < today
-    ) {
+
+    // ---------------------------------------------------
+    // NEVER ALLOW PAST DATE
+    // ---------------------------------------------------
+
+    if (date < today) {
+
+      alert(
+        "❌ You cannot select a date that has already passed."
+      );
 
       return;
 
     }
 
 
+    // ---------------------------------------------------
+    // SAVE DATE
+    // ---------------------------------------------------
+
     const value =
       dateToString(date);
 
-
-    /*
-    Hidden value sent to Supabase.
-    */
 
     dateInput.value =
       value;
 
 
-    /*
-    Visible value.
-    */
+    // ---------------------------------------------------
+    // DISPLAY DATE
+    // ---------------------------------------------------
 
-    dateDisplay.value =
-      formatDisplayDate(date);
+    if (dateDisplay) {
+
+      setDateDisplay(date);
+
+    }
 
 
-    calendarSelected.textContent =
-      formatDisplayDate(date);
+    if (calendarSelected) {
 
+      calendarSelected.textContent =
+        formatDisplayDate(date);
+
+    }
+
+
+    // ---------------------------------------------------
+    // CLOSE
+    // ---------------------------------------------------
 
     closeCalendar();
 
@@ -546,130 +633,151 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
-  // OPEN DATE PICKER
+  // DATE PICKER CLICK
   // =====================================================
 
-  dateDisplay.addEventListener(
-    "click",
-    openCalendar
-  );
+  if (dateDisplay) {
+
+    dateDisplay.addEventListener(
+      "click",
+      openCalendar
+    );
+
+  }
 
 
   // =====================================================
   // PREVIOUS MONTH
   // =====================================================
 
-  calendarPrev.addEventListener(
-    "click",
-    () => {
+  if (calendarPrev) {
 
-      const currentMonth =
-        new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          1
-        );
+    calendarPrev.addEventListener(
+      "click",
+      () => {
 
+        refreshToday();
 
-      const previousMonth =
-        new Date(
-          calendarMonth.getFullYear(),
-          calendarMonth.getMonth() - 1,
-          1
-        );
+        const currentMonth =
+          new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            1
+          );
 
 
-      /*
-      NEVER allow navigation
-      before current month.
-      */
+        const previousMonth =
+          new Date(
+            calendarMonth.getFullYear(),
+            calendarMonth.getMonth() - 1,
+            1
+          );
 
-      if (
-        previousMonth >=
-        currentMonth
-      ) {
 
-        calendarMonth =
-          previousMonth;
+        if (
+          previousMonth >=
+          currentMonth
+        ) {
 
-        renderCalendar();
+          calendarMonth =
+            previousMonth;
+
+          renderCalendar();
+
+        }
 
       }
+    );
 
-    }
-  );
+  }
 
 
   // =====================================================
   // NEXT MONTH
   // =====================================================
 
-  calendarNext.addEventListener(
-    "click",
-    () => {
+  if (calendarNext) {
 
-      calendarMonth =
-        new Date(
-          calendarMonth.getFullYear(),
-          calendarMonth.getMonth() + 1,
-          1
-        );
+    calendarNext.addEventListener(
+      "click",
+      () => {
 
-      renderCalendar();
+        calendarMonth =
+          new Date(
+            calendarMonth.getFullYear(),
+            calendarMonth.getMonth() + 1,
+            1
+          );
 
-    }
-  );
+        renderCalendar();
+
+      }
+    );
+
+  }
 
 
   // =====================================================
   // CANCEL
   // =====================================================
 
-  calendarCancel.addEventListener(
-    "click",
-    closeCalendar
-  );
+  if (calendarCancel) {
+
+    calendarCancel.addEventListener(
+      "click",
+      closeCalendar
+    );
+
+  }
 
 
   // =====================================================
-  // TODAY BUTTON
+  // TODAY
   // =====================================================
 
-  calendarToday.addEventListener(
-    "click",
-    () => {
+  if (calendarToday) {
 
-      selectDate(
-        getToday()
-      );
+    calendarToday.addEventListener(
+      "click",
+      () => {
 
-    }
-  );
-
-
-  // =====================================================
-  // CLICK OUTSIDE CALENDAR
-  // =====================================================
-
-  calendarOverlay.addEventListener(
-    "click",
-    event => {
-
-      if (
-        event.target ===
-        calendarOverlay
-      ) {
-
-        closeCalendar();
+        selectDate(
+          getToday()
+        );
 
       }
+    );
 
-    }
-  );
+  }
 
 
   // =====================================================
-  // ESCAPE KEY
+  // CLICK OUTSIDE
+  // =====================================================
+
+  if (calendarOverlay) {
+
+    calendarOverlay.addEventListener(
+      "click",
+      event => {
+
+        if (
+          event.target ===
+          calendarOverlay
+        ) {
+
+          closeCalendar();
+
+        }
+
+      }
+    );
+
+  }
+
+
+  // =====================================================
+  // ESCAPE
   // =====================================================
 
   document.addEventListener(
@@ -678,6 +786,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (
         event.key === "Escape" &&
+        calendarOverlay &&
         !calendarOverlay.hidden
       ) {
 
@@ -700,16 +809,18 @@ document.addEventListener("DOMContentLoaded", () => {
     lon2
   ) {
 
-    const earthRadius =
-      6371;
+    const earthRadius = 6371;
+
 
     const dLat =
       (lat2 - lat1) *
       Math.PI / 180;
 
+
     const dLon =
       (lon2 - lon1) *
       Math.PI / 180;
+
 
     const a =
       Math.sin(dLat / 2) ** 2 +
@@ -724,12 +835,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       Math.sin(dLon / 2) ** 2;
 
+
     const c =
       2 *
       Math.atan2(
         Math.sqrt(a),
         Math.sqrt(1 - a)
       );
+
 
     return earthRadius * c;
 
@@ -744,23 +857,34 @@ document.addEventListener("DOMContentLoaded", () => {
     distanceKm
   ) {
 
-    if (
-      distanceKm <= 5
-    ) {
+    /*
+    0 - 5 km
+    FREE
+    */
+
+    if (distanceKm <= 5) {
 
       return 0;
 
     }
 
 
-    if (
-      distanceKm <= 8
-    ) {
+    /*
+    5.01 - 8 km
+    ₱100
+    */
+
+    if (distanceKm <= 8) {
 
       return 100;
 
     }
 
+
+    /*
+    Beyond 8 km
+    + ₱50 every additional 3 km
+    */
 
     const additionalKm =
       distanceKm - 8;
@@ -772,8 +896,10 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
 
-    return 100 +
-      additionalBlocks * 50;
+    return (
+      100 +
+      additionalBlocks * 50
+    );
 
   }
 
@@ -784,11 +910,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatPeso(amount) {
 
-    return "₱" +
-      Number(amount)
-        .toLocaleString(
-          "en-PH"
-        );
+    return (
+      "₱" +
+      Number(amount).toLocaleString(
+        "en-PH"
+      )
+    );
 
   }
 
@@ -797,20 +924,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // LOCATION VARIABLES
   // =====================================================
 
-  let customerLatitude =
-    null;
+  let customerLatitude = null;
 
-  let customerLongitude =
-    null;
+  let customerLongitude = null;
 
-  let calculatedDistanceKm =
-    null;
+  let calculatedDistanceKm = null;
 
-  let calculatedDeliveryFee =
-    null;
+  let calculatedDeliveryFee = null;
 
-  let googleMapsLink =
-    "";
+  let googleMapsLink = "";
 
 
   // =====================================================
@@ -823,18 +945,18 @@ document.addEventListener("DOMContentLoaded", () => {
   ) {
 
     customerLatitude =
-      latitude;
+      Number(latitude);
 
     customerLongitude =
-      longitude;
+      Number(longitude);
 
 
     calculatedDistanceKm =
       calculateDistanceKm(
         BUSINESS_LAT,
         BUSINESS_LNG,
-        latitude,
-        longitude
+        customerLatitude,
+        customerLongitude
       );
 
 
@@ -851,48 +973,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     googleMapsLink =
-      `https://www.google.com/maps?q=${latitude},${longitude}`;
+      `https://www.google.com/maps?q=${customerLatitude},${customerLongitude}`;
 
 
-    distanceDisplay.textContent =
-      `${calculatedDistanceKm.toFixed(2)} km`;
+    if (distanceDisplay) {
+
+      distanceDisplay.textContent =
+        `${calculatedDistanceKm.toFixed(2)} km`;
+
+    }
 
 
-    feeDisplay.textContent =
-      calculatedDeliveryFee === 0
-        ? "FREE"
-        : formatPeso(
-            calculatedDeliveryFee
-          );
+    if (feeDisplay) {
 
-
-    resultDisplay.innerHTML =
-      `
-      📍 Location detected.<br>
-      Distance:
-      <b>${calculatedDistanceKm.toFixed(2)} km</b><br>
-      Delivery fee:
-      <b>${
+      feeDisplay.textContent =
         calculatedDeliveryFee === 0
           ? "FREE"
           : formatPeso(
               calculatedDeliveryFee
-            )
-      }</b>
-      `;
+            );
+
+    }
+
+
+    if (resultDisplay) {
+
+      resultDisplay.innerHTML =
+        `
+        📍 Location detected.<br>
+        Distance:
+        <b>${calculatedDistanceKm.toFixed(2)} km</b><br>
+        Delivery fee:
+        <b>${
+          calculatedDeliveryFee === 0
+            ? "FREE"
+            : formatPeso(
+                calculatedDeliveryFee
+              )
+        }</b><br>
+        <a
+          href="${googleMapsLink}"
+          target="_blank"
+          rel="noopener"
+        >
+          📍 View location on Google Maps
+        </a>
+        `;
+
+    }
 
   }
 
 
   // =====================================================
-  // GET GPS LOCATION
+  // GET CURRENT LOCATION
   // =====================================================
 
   function getCurrentLocation() {
 
-    if (
-      !navigator.geolocation
-    ) {
+    if (!navigator.geolocation) {
 
       alert(
         "❌ Your browser does not support location services."
@@ -903,16 +1042,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    locationBtn.disabled =
-      true;
+    if (locationBtn) {
 
-    locationBtn.textContent =
-      "📍 Getting Location...";
+      locationBtn.disabled = true;
+
+      locationBtn.textContent =
+        "📍 Getting Location...";
+
+    }
 
 
     navigator.geolocation.getCurrentPosition(
 
+      // -------------------------------------------------
+      // SUCCESS
+      // -------------------------------------------------
+
       position => {
+
+        console.log(
+          "GPS POSITION:",
+          position.coords
+        );
+
 
         updateLocationDisplay(
           position.coords.latitude,
@@ -920,14 +1072,21 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        locationBtn.disabled =
-          false;
+        if (locationBtn) {
 
-        locationBtn.textContent =
-          "📍 Location Detected";
+          locationBtn.disabled = false;
+
+          locationBtn.textContent =
+            "📍 Location Detected";
+
+        }
 
       },
 
+
+      // -------------------------------------------------
+      // ERROR
+      // -------------------------------------------------
 
       error => {
 
@@ -937,11 +1096,14 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        locationBtn.disabled =
-          false;
+        if (locationBtn) {
 
-        locationBtn.textContent =
-          "📍 Use My Current Location";
+          locationBtn.disabled = false;
+
+          locationBtn.textContent =
+            "📍 Use My Current Location";
+
+        }
 
 
         let message =
@@ -954,10 +1116,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
           message =
-            "❌ Location permission was denied. Please allow location access for this website.";
+            "❌ Location permission was denied.\n\n" +
+            "Please allow location access for this website in your browser settings.";
 
         }
-
 
         else if (
           error.code ===
@@ -965,10 +1127,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
           message =
-            "❌ Your location is currently unavailable.";
+            "❌ Your location is currently unavailable.\n\n" +
+            "Please make sure Location/GPS is turned on.";
 
         }
-
 
         else if (
           error.code ===
@@ -976,7 +1138,8 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
 
           message =
-            "❌ Location request timed out. Please try again.";
+            "❌ Location request timed out.\n\n" +
+            "Please try again.";
 
         }
 
@@ -985,6 +1148,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       },
 
+
+      // -------------------------------------------------
+      // OPTIONS
+      // -------------------------------------------------
 
       {
         enableHighAccuracy: true,
@@ -1001,41 +1168,49 @@ document.addEventListener("DOMContentLoaded", () => {
   // LOCATION BUTTON
   // =====================================================
 
-  locationBtn.addEventListener(
-    "click",
-    getCurrentLocation
-  );
+  if (locationBtn) {
+
+    locationBtn.addEventListener(
+      "click",
+      getCurrentLocation
+    );
+
+  }
 
 
   // =====================================================
   // CALCULATE DELIVERY
   // =====================================================
 
-  calculateBtn.addEventListener(
-    "click",
-    () => {
+  if (calculateBtn) {
 
-      if (
-        customerLatitude === null ||
-        customerLongitude === null
-      ) {
+    calculateBtn.addEventListener(
+      "click",
+      () => {
 
-        alert(
-          "📍 Please use your current location first."
+        if (
+          customerLatitude === null ||
+          customerLongitude === null
+        ) {
+
+          alert(
+            "📍 Please use your current location first."
+          );
+
+          return;
+
+        }
+
+
+        updateLocationDisplay(
+          customerLatitude,
+          customerLongitude
         );
 
-        return;
-
       }
+    );
 
-
-      updateLocationDisplay(
-        customerLatitude,
-        customerLongitude
-      );
-
-    }
-  );
+  }
 
 
   // =====================================================
@@ -1049,9 +1224,16 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
 
 
-      // -----------------------------------------------
-      // DATE VALIDATION
-      // -----------------------------------------------
+      // =================================================
+      // REFRESH TODAY
+      // =================================================
+
+      refreshToday();
+
+
+      // =================================================
+      // CHECK DATE
+      // =================================================
 
       const selectedDate =
         stringToDate(
@@ -1059,9 +1241,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-      if (
-        !selectedDate
-      ) {
+      if (!selectedDate) {
 
         alert(
           "📅 Please select a rental date."
@@ -1074,17 +1254,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      if (
-        selectedDate < today
-      ) {
+      if (selectedDate < today) {
 
         alert(
           "❌ You cannot book a date that has already passed."
         );
 
+
         dateInput.value = "";
 
-        dateDisplay.value = "";
+        clearDateDisplay();
 
         openCalendar();
 
@@ -1093,9 +1272,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      // -----------------------------------------------
-      // LOCATION
-      // -----------------------------------------------
+      // =================================================
+      // CHECK LOCATION
+      // =================================================
 
       if (
         customerLatitude === null ||
@@ -1111,9 +1290,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      // -----------------------------------------------
-      // DELIVERY
-      // -----------------------------------------------
+      // =================================================
+      // CHECK DELIVERY
+      // =================================================
 
       if (
         calculatedDistanceKm === null ||
@@ -1121,7 +1300,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ) {
 
         alert(
-          "Please calculate your delivery first."
+          "📍 Please calculate your delivery first."
         );
 
         return;
@@ -1129,9 +1308,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      // -----------------------------------------------
-      // SUPABASE
-      // -----------------------------------------------
+      // =================================================
+      // CHECK SUPABASE
+      // =================================================
 
       if (
         typeof supabaseClient ===
@@ -1139,7 +1318,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ) {
 
         alert(
-          "❌ Supabase is not configured. Please check config.js."
+          "❌ Supabase is not configured.\n\n" +
+          "Please check config.js."
         );
 
         return;
@@ -1147,40 +1327,119 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      // -----------------------------------------------
-      // VALUES
-      // -----------------------------------------------
+      // =================================================
+      // GET FORM VALUES
+      // =================================================
 
       const customerName =
-        nameInput.value.trim();
+        nameInput
+          ? nameInput.value.trim()
+          : "";
+
 
       const contactNumber =
-        phoneInput.value.trim();
+        phoneInput
+          ? phoneInput.value.trim()
+          : "";
+
 
       const packageName =
-        packageInput.value.trim();
+        packageInput
+          ? packageInput.value.trim()
+          : "";
+
 
       const rentalDate =
         dateInput.value;
 
+
       const deliveryAddress =
-        addressInput.value.trim();
+        addressInput
+          ? addressInput.value.trim()
+          : "";
 
 
-      // -----------------------------------------------
-      // DISABLE BUTTON
-      // -----------------------------------------------
+      // =================================================
+      // BASIC VALIDATION
+      // =================================================
 
-      submitBtn.disabled =
-        true;
+      if (!customerName) {
 
-      submitBtn.textContent =
-        "Sending Booking...";
+        alert(
+          "Please enter your name."
+        );
+
+        return;
+
+      }
 
 
-      // -----------------------------------------------
+      if (!contactNumber) {
+
+        alert(
+          "Please enter your contact number."
+        );
+
+        return;
+
+      }
+
+
+      if (!packageName) {
+
+        alert(
+          "Please select a package."
+        );
+
+        return;
+
+      }
+
+
+      if (!deliveryAddress) {
+
+        alert(
+          "Please enter your delivery address."
+        );
+
+        return;
+
+      }
+
+
+      // =================================================
+      // DISABLE SUBMIT BUTTON
+      // =================================================
+
+      if (submitBtn) {
+
+        submitBtn.disabled = true;
+
+        submitBtn.textContent =
+          "Sending Booking...";
+
+      }
+
+
+      // =================================================
       // BOOKING DATA
-      // -----------------------------------------------
+      // =================================================
+
+      /*
+      IMPORTANT:
+
+      Your Supabase table currently uses:
+
+      costumer_name
+
+      NOT:
+
+      customer_name
+
+      Therefore this must stay
+      costumer_name until you rename
+      the database column.
+      */
 
       const bookingData = {
 
@@ -1221,28 +1480,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       console.log(
-        "Submitting booking:",
+        "BOOKING DATA:",
         bookingData
       );
 
 
-      // -----------------------------------------------
+      // =================================================
       // SAVE TO SUPABASE
-      // -----------------------------------------------
+      // =================================================
 
       try {
 
+        /*
+        IMPORTANT FIX:
+
+        DO NOT use .select() here.
+
+        Your website only needs INSERT permission.
+        Using .select() asks Supabase to return
+        the inserted row, which can require SELECT
+        permission/RLS.
+
+        Therefore we use ONLY insert().
+        */
+
         const {
-          data,
           error
         } =
           await supabaseClient
             .from("bookings")
-            .insert([
+            .insert(
               bookingData
-            ])
-            .select();
+            );
 
+
+        // =================================================
+        // SUPABASE ERROR
+        // =================================================
 
         if (error) {
 
@@ -1251,6 +1525,7 @@ document.addEventListener("DOMContentLoaded", () => {
             error
           );
 
+
           throw new Error(
             error.message
           );
@@ -1258,15 +1533,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
+        // =================================================
+        // SUCCESS
+        // =================================================
+
         console.log(
-          "BOOKING SAVED:",
-          data
+          "BOOKING SAVED SUCCESSFULLY"
         );
 
-
-        // ---------------------------------------------
-        // SUCCESS
-        // ---------------------------------------------
 
         alert(
           "✅ BOOKING SUCCESSFUL!\n\n" +
@@ -1276,11 +1550,12 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        // ---------------------------------------------
-        // MESSENGER
-        // ---------------------------------------------
+        // =================================================
+        // MESSENGER MESSAGE
+        // =================================================
 
         const messengerMessage =
+
           `Hello JEPOY'S JBL PARTYBOX!\n\n` +
 
           `I would like to make a booking.\n\n` +
@@ -1317,15 +1592,17 @@ document.addEventListener("DOMContentLoaded", () => {
           );
 
 
+        // =================================================
+        // MESSENGER CONFIRMATION
+        // =================================================
+
         const sendMessenger =
           confirm(
             "Would you also like to send the booking details through Facebook Messenger?"
           );
 
 
-        if (
-          sendMessenger
-        ) {
+        if (sendMessenger) {
 
           window.open(
             messengerURL,
@@ -1335,53 +1612,89 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        // ---------------------------------------------
-        // RESET
-        // ---------------------------------------------
+        // =================================================
+        // RESET FORM
+        // =================================================
 
         bookingForm.reset();
+
 
         dateInput.value =
           "";
 
-        dateDisplay.value =
-          "";
+
+        clearDateDisplay();
+
 
         customerLatitude =
           null;
 
+
         customerLongitude =
           null;
+
 
         calculatedDistanceKm =
           null;
 
+
         calculatedDeliveryFee =
           null;
+
 
         googleMapsLink =
           "";
 
 
-        distanceDisplay.textContent =
-          "Not calculated";
+        if (distanceDisplay) {
 
-        feeDisplay.textContent =
-          "Not calculated";
+          distanceDisplay.textContent =
+            "Not calculated";
 
-        resultDisplay.textContent =
-          "Tap the button to calculate your distance.";
+        }
 
 
-        submitBtn.disabled =
-          false;
+        if (feeDisplay) {
 
-        submitBtn.textContent =
-          "Send Booking Request";
+          feeDisplay.textContent =
+            "Not calculated";
 
+        }
+
+
+        if (resultDisplay) {
+
+          resultDisplay.textContent =
+            "Tap the button to calculate your distance.";
+
+        }
+
+
+        if (locationBtn) {
+
+          locationBtn.disabled = false;
+
+          locationBtn.textContent =
+            "📍 Use My Current Location";
+
+        }
+
+
+        if (submitBtn) {
+
+          submitBtn.disabled = false;
+
+          submitBtn.textContent =
+            "Send Booking Request";
+
+        }
 
       }
 
+
+      // =================================================
+      // ERROR
+      // =================================================
 
       catch (error) {
 
@@ -1396,32 +1709,86 @@ document.addEventListener("DOMContentLoaded", () => {
           "Unknown error";
 
 
+        const lowerMessage =
+          message.toLowerCase();
+
+
+        // -----------------------------------------------
+        // RLS ERROR
+        // -----------------------------------------------
+
         if (
-          message
-            .toLowerCase()
-            .includes(
-              "failed to fetch"
-            )
+          lowerMessage.includes(
+            "row-level security"
+          )
         ) {
 
           message =
-            "The website could not connect to Supabase.\n\n" +
-            "Check your Supabase URL, API key, internet connection, and Supabase settings.";
+            "Supabase blocked the booking because of the Row Level Security policy.\n\n" +
+            "Make sure the public INSERT policy for the bookings table is enabled.";
 
         }
 
 
+        // -----------------------------------------------
+        // FAILED FETCH
+        // -----------------------------------------------
+
+        else if (
+          lowerMessage.includes(
+            "failed to fetch"
+          )
+        ) {
+
+          message =
+            "The website could not connect to Supabase.\n\n" +
+            "Check your Supabase URL, publishable/anon key, internet connection, and Data API settings.";
+
+        }
+
+
+        // -----------------------------------------------
+        // COLUMN ERROR
+        // -----------------------------------------------
+
+        else if (
+          lowerMessage.includes(
+            "column"
+          ) &&
+          lowerMessage.includes(
+            "does not exist"
+          )
+        ) {
+
+          message =
+            "One of the column names in script.js does not match your Supabase bookings table.\n\n" +
+            "Check the column names in Supabase.";
+
+        }
+
+
+        // -----------------------------------------------
+        // SHOW ERROR
+        // -----------------------------------------------
+
         alert(
-          "❌ Booking could not be saved.\n\n" +
+          "❌ BOOKING COULD NOT BE SAVED.\n\n" +
           message
         );
 
 
-        submitBtn.disabled =
-          false;
+        // -----------------------------------------------
+        // ENABLE BUTTON
+        // -----------------------------------------------
 
-        submitBtn.textContent =
-          "Send Booking Request";
+        if (submitBtn) {
+
+          submitBtn.disabled = false;
+
+          submitBtn.textContent =
+            "Send Booking Request";
+
+        }
 
       }
 
@@ -1430,11 +1797,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // =====================================================
-  // INITIALIZE
+  // INITIALIZE CALENDAR
+  // =====================================================
+
+  refreshToday();
+
+
+  if (dateInput.value) {
+
+    const initialDate =
+      stringToDate(
+        dateInput.value
+      );
+
+
+    if (
+      initialDate &&
+      initialDate >= today
+    ) {
+
+      setDateDisplay(
+        initialDate
+      );
+
+    }
+
+  }
+
+
+  // =====================================================
+  // FINAL MESSAGE
   // =====================================================
 
   console.log(
-    "JEPOY'S JBL PARTYBOX custom calendar ready."
+    "✅ JEPOY'S JBL PARTYBOX booking system loaded."
+  );
+
+  console.log(
+    "✅ Custom calendar enabled."
+  );
+
+  console.log(
+    "✅ Past dates blocked."
+  );
+
+  console.log(
+    "✅ GPS location enabled."
+  );
+
+  console.log(
+    "✅ Delivery calculation enabled."
+  );
+
+  console.log(
+    "✅ Supabase booking INSERT enabled."
   );
 
 });

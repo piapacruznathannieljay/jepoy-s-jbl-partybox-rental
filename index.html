@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#050507"
+  >
+
+  <meta
+    name="description"
+    content="JEPOY'S JBL PARTYBOX rental booking"
+  >
+
+  <title>JEPOY'S JBL PARTYBOX</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+  <style>
+
+    /* =====================================================
+       CUSTOM DATE PICKER
+    ===================================================== */
+
+    .date-picker-input {
+      width: 100%;
+      min-height: 58px;
+      padding: 16px 18px;
+      border: 1px solid #333;
+      border-radius: 12px;
+      background: #111;
+      color: #fff;
+      font-size: 16px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .date-picker-input:hover {
+      border-color: #d66a00;
+    }
+
+    .date-picker-input:focus {
+      outline: 2px solid #d66a00;
+      outline-offset: 2px;
+    }
+
+    .date-placeholder {
+      color: #999;
+    }
+
+    .date-value {
+      color: #fff;
+    }
+
+    .calendar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .calendar-overlay[hidden] {
+      display: none;
+    }
+
+    .calendar-box {
+      width: 100%;
+      max-width: 390px;
+      background: #111114;
+      border: 1px solid #333;
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    .calendar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .calendar-selected {
+      color: #d66a00;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .calendar-title {
+      color: #fff;
+      font-size: 23px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    .calendar-navigation {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 15px 0;
+    }
+
+    .calendar-month {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .calendar-nav-btn {
+      width: 44px;
+      height: 44px;
+      border: 1px solid #333;
+      border-radius: 50%;
+      background: #1b1b1f;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .calendar-nav-btn:hover:not(:disabled) {
+      border-color: #d66a00;
+      color: #d66a00;
+    }
+
+    .calendar-nav-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+
+    .calendar-weekdays,
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .calendar-weekday {
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 0;
+    }
+
+    .calendar-day {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .calendar-day:hover:not(:disabled) {
+      background: #2b2b30;
+    }
+
+    .calendar-day.today {
+      border: 1px solid #d66a00;
+    }
+
+    .calendar-day.selected {
+      background: #d66a00;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .calendar-day.past {
+      color: #444;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    .calendar-day:disabled {
+      opacity: 0.35;
+    }
+
+    .calendar-empty {
+      aspect-ratio: 1;
+    }
+
+    .calendar-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .calendar-footer button {
+      flex: 1;
+      min-height: 48px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #1a1a1d;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .calendar-footer button:hover {
+      border-color: #d66a00;
+    }
+
+    .calendar-footer .calendar-confirm {
+      background: #d66a00;
+      border-color: #d66a00;
+    }
+
+    /* =====================================================
+       LOCATION RESULT
+    ===================================================== */
+
+    #result {
+      margin-top: 15px;
+      padding: 14px;
+      border-radius: 12px;
+      background: #111;
+      color: #bbb;
+      line-height: 1.6;
+    }
+
+    /* =====================================================
+       MOBILE
+    ===================================================== */
+
+    @media (max-width: 480px) {
+
+      .calendar-box {
+        max-width: 100%;
+        padding: 17px;
+      }
+
+      .calendar-title {
+        font-size: 21px;
+      }
+
+      .calendar-month {
+        font-size: 16px;
+      }
+
+      .calendar-day {
+        font-size: 14px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <!-- =====================================================
+       HEADER
+  ===================================================== -->
+
+  <header>
+
+    <div class="container header-inner">
+
+      <a
+        href="#home"
+        class="logo"
+      >
+        JEPOY'S
+        <span>JBL PARTYBOX</span>
+      </a>
+
+      <a
+        href="#booking"
+        class="reserve-btn"
+      >
+        Reserve
+      </a>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       HERO
+  ===================================================== -->
+
+  <main id="home">
+
+    <section class="hero">
+
+      <div class="container">
+
+        <p class="eyebrow">
+          SOUND. MOVIE MARATHON. SING. PARTY.
+        </p>
+
+        <h1>
+          Bring the
+          <span>Party</span>
+          to You.
+        </h1>
+
+        <p class="hero-text">
+          JBL PartyBox Ultimate rental with
+          karaoke, movie entertainment and
+          complete party packages.
+        </p>
+
+        <a
+          href="#booking"
+          class="btn"
+        >
+          Book Now
+        </a>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         PACKAGES
+    =================================================== -->
+
+    <section class="packages">
+
+      <div class="container">
+
+        <p class="eyebrow">
+          RENTAL PACKAGES
+        </p>
+
+        <h2>
+          Choose Your Package
+        </h2>
+
+
+        <!-- PACKAGE 1 -->
+
+        <div class="package-card">
+
+          <h3>
+            Package 1 - PartyBox Starter
+          </h3>
+
+          <p>
+            JBL PartyBox Ultimate
+          </p>
+
+          <p>
+            2 wireless microphones
+          </p>
+
+          <p>
+            Perfect for music and small parties
+          </p>
+
+          <div class="price-row">
+            <strong>12 Hours ₱799</strong>
+            <strong>24 Hours ₱999</strong>
+          </div>
+
+          <p class="extension">
+            ₱100/hour extension
+          </p>
+
+        </div>
+
+
+        <!-- PACKAGE 2 -->
+
+        <div class="package-card">
+
+          <h3>
+            Package 2 - Party + Movie
+          </h3>
+
+          <p>
+            JBL PartyBox Ultimate
+          </p>
+
+          <p>
+            2 wireless microphones
+          </p>
+
+          <p>
+            43″ Xiaomi Google TV
+          </p>
+
+          <p>
+            TV stand
+          </p>
+
+          <p>
+            Premium entertainment subscriptions
+          </p>
+
+          <div class="price-row">
+            <strong>12 Hours ₱1,099</strong>
+            <strong>24 Hours ₱1,399</strong>
+          </div>
+
+          <p class="extension">
+            ₱150/hour extension
+          </p>
+
+        </div>
+
+
+        <!-- FULL PACKAGE -->
+
+        <div class="package-card featured">
+
+          <h3>
+            Full Package - Complete Party Setup
+          </h3>
+
+          <p>
+            JBL PartyBox Ultimate
+          </p>
+
+          <p>
+            2 wireless microphones
+          </p>
+
+          <p>
+            43″ Xiaomi Google TV + stand
+          </p>
+
+          <p>
+            Platinum karaoke system
+          </p>
+
+          <p>
+            23,000+ songs
+          </p>
+
+          <p>
+            Wired microphone
+          </p>
+
+          <p>
+            Mini disco lights
+          </p>
+
+          <div class="price-row">
+            <strong>12 Hours ₱1,199</strong>
+            <strong>24 Hours ₱1,599</strong>
+          </div>
+
+          <p class="extension">
+            ₱150/hour extension
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         DELIVERY INFORMATION
+    =================================================== -->
+
+    <section class="delivery">
+
+      <div class="container">
+
+        <p class="eyebrow">
+          DELIVERY
+        </p>
+
+        <h2>
+          Delivery Fee
+        </h2>
+
+        <p>
+          FREE within 5 km.
+        </p>
+
+        <p>
+          Beyond 5 km: ₱100 base delivery
+          + ₱50 for every additional 3 km.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         BOOKING
+    =================================================== -->
+
+    <section
+      id="booking"
+      class="booking-section"
+    >
+
+      <div class="container">
+
+        <p class="eyebrow">
+          RESERVE YOUR DATE
+        </p>
+
+        <h2>
+          Book Your Party
+        </h2>
+
+
+        <div class="booking-card">
+
+
+          <!-- =============================================
+               BOOKING FORM
+          ============================================== -->
+
+          <form id="bookingForm">
+
+
+            <!-- NAME -->
+
+            <label for="name">
+              Name
+
+              <input
+                id="name"
+                name="costumer_name"
+                type="text"
+                autocomplete="name"
+                required
+              >
+
+            </label>
+
+
+            <!-- CONTACT -->
+
+            <label for="phone">
+              Contact number
+
+              <input
+                id="phone"
+                name="contact_number"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                required
+              >
+
+            </label>
+
+
+            <!-- PACKAGE -->
+
+            <label for="package">
+              Package
+
+              <select
+                id="package"
+                name="package_name"
+                required
+              >
+
+                <option value="">
+                  Select Package
+                </option>
+
+                <option>
+                  Package 1 - PartyBox Starter
+                </option>
+
+                <option>
+                  Package 2 - Party + Movie
+                </option>
+
+                <option>
+                  Full Package - Complete Party Setup
+                </option>
+
+              </select>
+
+            </label>
+
+
+            <!-- =========================================
+                 CUSTOM DATE PICKER
+            ========================================== -->
+
+            <label>
+              Rental date
+
+              <!--
+                IMPORTANT:
+                This is NOT type="date".
+                Therefore Android will NOT open
+                its native calendar.
+              -->
+
+              <button
+                type="button"
+                id="dateDisplay"
+                class="date-picker-input"
+                aria-haspopup="dialog"
+                aria-controls="calendarOverlay"
+              >
+
+                <span
+                  id="dateDisplayText"
+                  class="date-placeholder"
+                >
+                  Select a date
+                </span>
+
+                <span>
+                  📅
+                </span>
+
+              </button>
+
+
+              <!--
+                Hidden value that script.js uses.
+                Format:
+                YYYY-MM-DD
+              -->
+
+              <input
+                type="hidden"
+                id="date"
+                name="rental_date"
+                value=""
+              >
+
+            </label>
+
+
+            <!-- =========================================
+                 ADDRESS
+            ========================================== -->
+
+            <label for="address">
+              Delivery address
+
+              <textarea
+                id="address"
+                name="delivery_address"
+                rows="4"
+                autocomplete="street-address"
+                required
+              ></textarea>
+
+            </label>
+
+
+            <!-- =========================================
+                 LOCATION
+            ========================================== -->
+
+            <button
+              type="button"
+              id="locationBtn"
+              class="btn"
+            >
+              📍 Use My Current Location
+            </button>
+
+
+            <!-- =========================================
+                 LOCATION RESULT
+            ========================================== -->
+
+            <div id="result">
+              Tap the button to detect your location.
+            </div>
+
+
+            <!-- =========================================
+                 BOOKING SUMMARY
+            ========================================== -->
+
+            <div class="summary">
+
+              <span>
+                Distance
+              </span>
+
+              <b id="distance">
+                Not calculated
+              </b>
+
+
+              <span>
+                Delivery fee
+              </span>
+
+              <b id="fee">
+                Not calculated
+              </b>
+
+            </div>
+
+
+            <!-- =========================================
+                 CALCULATE DELIVERY
+            ========================================== -->
+
+            <button
+              type="button"
+              id="calc"
+              class="btn dark"
+            >
+              Calculate Delivery
+            </button>
+
+
+            <!-- =========================================
+                 SUBMIT
+            ========================================== -->
+
+            <button
+              type="submit"
+              id="submitBooking"
+              class="btn"
+            >
+              Send Booking Request
+            </button>
+
+
+          </form>
+
+        </div>
+
+
+        <!-- MESSENGER -->
+
+        <a
+          href="https://m.me/1218332498024792"
+          target="_blank"
+          rel="noopener"
+          class="messenger-link"
+        >
+          💬 Message us on Facebook Messenger
+        </a>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       CUSTOM CALENDAR
+  ====================================================== -->
+
+  <div
+    id="calendarOverlay"
+    class="calendar-overlay"
+    hidden
+  >
+
+    <div
+      class="calendar-box"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="calendarTitle"
+    >
+
+
+      <!-- CALENDAR HEADER -->
+
+      <div class="calendar-top">
+
+        <div>
+
+          <div
+            id="calendarSelected"
+            class="calendar-selected"
+          >
+            Select a date
+          </div>
+
+          <h3
+            id="calendarTitle"
+            class="calendar-title"
+          >
+            September 2026
+          </h3>
+
+        </div>
+
+      </div>
+
+
+      <!-- MONTH NAVIGATION -->
+
+      <div class="calendar-navigation">
+
+        <button
+          type="button"
+          id="calendarPrev"
+          class="calendar-nav-btn"
+          aria-label="Previous month"
+        >
+          ‹
+        </button>
+
+
+        <div
+          id="calendarMonth"
+          class="calendar-month"
+        >
+          September
+        </div>
+
+
+        <button
+          type="button"
+          id="calendarNext"
+          class="calendar-nav-btn"
+          aria-label="Next month"
+        >
+          ›
+        </button>
+
+      </div>
+
+
+      <!-- WEEK DAYS -->
+
+      <div class="calendar-weekdays">
+
+        <div class="calendar-weekday">S</div>
+        <div class="calendar-weekday">M</div>
+        <div class="calendar-weekday">T</div>
+        <div class="calendar-weekday">W</div>
+        <div class="calendar-weekday">T</div>
+        <div class="calendar-weekday">F</div>
+        <div class="calendar-weekday">S</div>
+
+      </div>
+
+
+      <!-- DAYS -->
+
+      <div
+        id="calendarDays"
+        class="calendar-days"
+      ></div>
+
+
+      <!-- FOOTER -->
+
+      <div class="calendar-footer">
+
+        <button
+          type="button"
+          id="calendarCancel"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          id="calendarToday"
+          class="calendar-confirm"
+        >
+          Today
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
+  <footer>
+
+    <div class="container">
+
+      <p>
+        © 2026 JEPOY'S JBL PARTYBOX
+        • Bugallon, Pangasinan
+      </p>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =====================================================
+       SUPABASE
+  ====================================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+
+  <!-- =====================================================
+       CONFIG
+  ====================================================== -->
+
+  <script src="config.js"></script>
+
+
+  <!-- =====================================================
+       MAIN JAVASCRIPT
+  ====================================================== -->
+
+  <script src="script.js"></script>
+
+
+  <!-- =====================================================
+       CALENDAR FALLBACK / SAFETY
+  ====================================================== -->
+
+  <script>
+
+    /*
+    ========================================================
+    IMPORTANT CALENDAR SAFETY
+
+    This prevents accidental native date inputs from
+    appearing if another script changes #date.
+    ========================================================
+    */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        const dateDisplay =
+          document.getElementById("dateDisplay");
+
+        if (dateDisplay) {
+
+          dateDisplay.setAttribute(
+            "type",
+            "button"
+          );
+
+        }
+
+        const dateInput =
+          document.getElementById("date");
+
+        if (dateInput) {
+
+          /*
+          Make absolutely sure this remains hidden.
+          */
+
+          dateInput.type = "hidden";
+
+        }
+
+      }
+    );
+
+  </script>
+
+
+</body>
+
+</html>
